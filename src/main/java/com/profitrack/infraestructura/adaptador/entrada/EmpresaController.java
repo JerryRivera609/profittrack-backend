@@ -1,49 +1,37 @@
 package com.profitrack.infraestructura.adaptador.entrada;
 
 import com.profitrack.aplicacion.dto.empresaDto.EmpresaPatchDto;
-import com.profitrack.aplicacion.dto.empresaDto.EmpresaRequestDto;
 import com.profitrack.aplicacion.dto.empresaDto.EmpresaResponseDto;
 import com.profitrack.dominio.puerto.entrada.EmpresaUseCase;
+import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+/**
+ * Controlador REST para gestión de la empresa.
+ * RBAC: Solo Owner puede modificar datos de su empresa.
+ */
 @RestController
 @RequestMapping("/api/empresas")
 @RequiredArgsConstructor
 public class EmpresaController {
 
     private final EmpresaUseCase empresaUseCase;
+    private final SecurityContextUtils securityContext;
 
-    @PostMapping
-    public ResponseEntity<EmpresaResponseDto> crear(@Valid @RequestBody EmpresaRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(empresaUseCase.crear(dto));
+    @GetMapping("/mi-empresa")
+    public ResponseEntity<EmpresaResponseDto> obtenerMiEmpresa() {
+        Long empresaId = securityContext.getEmpresaId();
+        return ResponseEntity.ok(empresaUseCase.obtenerPorId(empresaId));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EmpresaResponseDto> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(empresaUseCase.obtenerPorId(id));
+    @PatchMapping("/mi-empresa")
+    public ResponseEntity<EmpresaResponseDto> actualizarMiEmpresa(
+            @RequestBody @Valid EmpresaPatchDto dto) {
+        securityContext.validarRol("Owner");
+        Long empresaId = securityContext.getEmpresaId();
+        return ResponseEntity.ok(empresaUseCase.actualizar(empresaId, dto));
     }
-
-    @GetMapping
-    public ResponseEntity<List<EmpresaResponseDto>> listar() {
-        return ResponseEntity.ok(empresaUseCase.listarActivos());
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<EmpresaResponseDto> actualizar (@PathVariable Long id, @RequestBody EmpresaPatchDto dto){
-        return ResponseEntity.ok(empresaUseCase.actualizar(id, dto));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        empresaUseCase.eliminar(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
 }
