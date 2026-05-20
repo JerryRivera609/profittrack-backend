@@ -4,4 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 public interface TipoTareaJpaRepository extends JpaRepository<TipoTarea, Long> {
     List<TipoTarea> findAllByEmpresaId(Long empresaId);
+    List<TipoTarea> findAllByEmpresaIdAndActivoTrue(Long empresaId);
 }
