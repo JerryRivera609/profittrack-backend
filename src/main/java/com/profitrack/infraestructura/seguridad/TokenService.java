@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.ResponseCookie;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -162,21 +163,25 @@ public class TokenService {
     // ── Cookies ──
 
     private void setAccessCookie(HttpServletResponse res, String token) {
-        Cookie c = new Cookie("access_token", token);
-        c.setHttpOnly(true);
-        c.setSecure(false); // true en producción (HTTPS)
-        c.setPath("/");
-        c.setMaxAge((int) accessExp);
-        res.addCookie(c);
+        ResponseCookie c = ResponseCookie.from("access_token", token)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(accessExp)
+                .sameSite("None")
+                .build();
+        res.addHeader("Set-Cookie", c.toString());
     }
 
     private void setRefreshCookie(HttpServletResponse res, String token) {
-        Cookie c = new Cookie("refresh_token", token);
-        c.setHttpOnly(true);
-        c.setSecure(false);
-        c.setPath("/api/auth/refresh");
-        c.setMaxAge((int) refreshExp);
-        res.addCookie(c);
+        ResponseCookie c = ResponseCookie.from("refresh_token", token)
+                .httpOnly(true)
+                .secure(true)
+                .path("/api/auth/refresh")
+                .maxAge(refreshExp)
+                .sameSite("None")
+                .build();
+        res.addHeader("Set-Cookie", c.toString());
     }
 
     private String hash(String input) {

@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,15 +46,15 @@ public class AuthController {
 
     public record LoginRequest(
             @NotBlank @Email String correo,
-            @NotBlank String contrasenia
-    ) {}
+            @NotBlank String contrasenia) {
+    }
 
     // ── Endpoints ──
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest req,
-                                                     HttpServletRequest httpReq,
-                                                     HttpServletResponse httpRes) {
+            HttpServletRequest httpReq,
+            HttpServletResponse httpRes) {
         // 1. Spring Security valida credenciales (via CustomUserDetailsService)
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.correo(), req.contrasenia()));
@@ -67,8 +69,7 @@ public class AuthController {
                     "tipo", "empleado",
                     "nombre", emp.getNombres() + " " + emp.getApellidos(),
                     "rol", emp.getRol() != null ? emp.getRol().getNombre() : "SIN_ROL",
-                    "empresaId", emp.getEmpresa().getId()
-            ));
+                    "empresaId", emp.getEmpresa().getId()));
         }
 
         Optional<Duenio> duenioOpt = duenioRepo.buscarPorCorreoYActivo(req.correo());
@@ -79,9 +80,8 @@ public class AuthController {
                     "mensaje", "Login exitoso",
                     "tipo", "duenio",
                     "nombre", duenio.getNombres() + " " + duenio.getApellidos(),
-                    "rol", "Owner",
-                    "empresaId", duenio.getEmpresa().getId()
-            ));
+                    "rol", "owner",
+                    "empresaId", duenio.getEmpresa().getId()));
         }
 
         return ResponseEntity.status(401).body(Map.of("error", "Usuario no encontrado"));
@@ -89,7 +89,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refresh(HttpServletRequest req,
-                                                       HttpServletResponse res) {
+            HttpServletResponse res) {
         String rawRefresh = extractCookie(req, "refresh_token");
         if (rawRefresh == null) {
             return ResponseEntity.status(401).body(Map.of("error", "No se encontró refresh token"));
@@ -145,7 +145,8 @@ public class AuthController {
     // ── Helpers ──
 
     private String extractCookie(HttpServletRequest req, String name) {
-        if (req.getCookies() == null) return null;
+        if (req.getCookies() == null)
+            return null;
         return Arrays.stream(req.getCookies())
                 .filter(c -> name.equals(c.getName()))
                 .map(Cookie::getValue)
@@ -154,11 +155,15 @@ public class AuthController {
 
     private void clearCookies(HttpServletResponse res) {
         Stream.of("access_token", "refresh_token").forEach(name -> {
-            Cookie c = new Cookie(name, "");
-            c.setMaxAge(0);
-            c.setPath("/");
-            c.setHttpOnly(true);
-            res.addCookie(c);
+            String path = name.equals("refresh_token") ? "/api/auth/refresh" : "/";
+            ResponseCookie c = ResponseCookie.from(name, "")
+                    .httpOnly(true)
+                    .secure(true)
+                    .path(path)
+                    .maxAge(0)
+                    .sameSite("None")
+                    .build();
+            res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
         });
     }
 }
