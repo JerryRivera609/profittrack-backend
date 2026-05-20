@@ -41,7 +41,7 @@ public class TokenService {
      * Crea una sesión para un Empleado autenticado.
      */
     @Transactional
-    public void crearSesionEmpleado(Empleado empleado, String deviceInfo, HttpServletResponse res) {
+    public String crearSesionEmpleado(Empleado empleado, String deviceInfo, HttpServletResponse res) {
         String sessionId = UUID.randomUUID().toString();
         String rawRefresh = UUID.randomUUID().toString();
 
@@ -58,13 +58,14 @@ public class TokenService {
         String accessToken = buildJwtEmpleado(empleado, sessionId);
         setAccessCookie(res, accessToken);
         setRefreshCookie(res, rawRefresh);
+        return accessToken;
     }
 
     /**
      * Crea una sesión para un Dueño autenticado.
      */
     @Transactional
-    public void crearSesionDuenio(Duenio duenio, String deviceInfo, HttpServletResponse res) {
+    public String crearSesionDuenio(Duenio duenio, String deviceInfo, HttpServletResponse res) {
         String sessionId = UUID.randomUUID().toString();
         String rawRefresh = UUID.randomUUID().toString();
 
@@ -81,14 +82,15 @@ public class TokenService {
         String accessToken = buildJwtDuenio(duenio, sessionId);
         setAccessCookie(res, accessToken);
         setRefreshCookie(res, rawRefresh);
+        return accessToken;
     }
 
     /**
      * Rota el refresh token (refresh token rotation).
      */
     @Transactional
-    public void rotarSesion(String rawRefresh, HttpServletResponse res,
-                            java.util.function.Function<Long, String> tokenBuilder) {
+    public String rotarSesion(String rawRefresh, HttpServletResponse res,
+                            java.util.function.BiFunction<Long, String, String> tokenBuilder) {
         SesionUsuario sesion = sesionRepo.buscarPorRefreshTokenHash(hash(rawRefresh))
                 .orElseThrow(() -> new RuntimeException("Refresh token inválido"));
 
@@ -101,9 +103,10 @@ public class TokenService {
         sesion.setExpiresAt(Instant.now().plusSeconds(refreshExp));
         sesionRepo.guardar(sesion);
 
-        String accessToken = tokenBuilder.apply(sesion.getUserId());
+        String accessToken = tokenBuilder.apply(sesion.getUserId(), sesion.getSessionId());
         setAccessCookie(res, accessToken);
         setRefreshCookie(res, newRawRefresh);
+        return accessToken;
     }
 
     @Transactional
@@ -122,7 +125,7 @@ public class TokenService {
 
     // ── JWT builders ──
 
-    private String buildJwtEmpleado(Empleado emp, String sessionId) {
+    public String buildJwtEmpleado(Empleado emp, String sessionId) {
         Instant now = Instant.now();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -139,7 +142,7 @@ public class TokenService {
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }
 
-    private String buildJwtDuenio(Duenio duenio, String sessionId) {
+    public String buildJwtDuenio(Duenio duenio, String sessionId) {
         Instant now = Instant.now();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         JwtClaimsSet claims = JwtClaimsSet.builder()

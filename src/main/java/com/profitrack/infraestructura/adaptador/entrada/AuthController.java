@@ -95,27 +95,21 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "No se encontró refresh token"));
         }
 
-        // Decodificar el access token actual para saber quién es
-        String accessToken = extractCookie(req, "access_token");
-        if (accessToken != null) {
-            try {
-                Jwt jwt = tokenService.decode(accessToken);
-                String tipo = jwt.getClaimAsString("tipo");
+        try {
+            tokenService.rotarSesion(rawRefresh, res, (userId, sessionId) -> {
+                Optional<Empleado> empOpt = empleadoRepo.buscarPorId(userId);
+                if (empOpt.isPresent()) {
+                    return tokenService.buildJwtEmpleado(empOpt.get(), sessionId);
+                }
+                Duenio duenio = duenioRepo.buscarPorId(userId)
+                        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                return tokenService.buildJwtDuenio(duenio, sessionId);
+            });
 
-                tokenService.rotarSesion(rawRefresh, res, userId -> {
-                    if ("duenio".equals(tipo)) {
-                        Duenio duenio = duenioRepo.buscarPorId(userId)
-                                .orElseThrow(() -> new RuntimeException("Dueño no encontrado"));
-                        return null; // Se maneja internamente por rotarSesion
-                    }
-                    return null;
-                });
-            } catch (Exception e) {
-                return ResponseEntity.status(401).body(Map.of("error", "Token inválido"));
-            }
+            return ResponseEntity.ok(Map.of("mensaje", "Token renovado"));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Sesión inválida o expirada: " + e.getMessage()));
         }
-
-        return ResponseEntity.ok(Map.of("mensaje", "Token renovado"));
     }
 
     @PostMapping("/logout")
