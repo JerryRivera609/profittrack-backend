@@ -34,6 +34,16 @@ public class TareaProyectoService implements TareaProyectoUseCase {
         return tareaRepo.buscarActivasPorProyecto(proyectoId).stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    @Override public List<TareaProyectoResponseDto> listarInactivasPorProyecto(Long proyectoId) {
+        return tareaRepo.buscarInactivasPorProyecto(proyectoId).stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @Override public TareaProyectoResponseDto reactivar(Long id) {
+        TareaProyecto t = tareaRepo.buscarPorId(id).orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+        t.setActivo(true);
+        return toDto(tareaRepo.guardar(t));
+    }
+
     @Override public TareaProyectoResponseDto actualizar(Long id, TareaProyectoPatchDto dto) {
         TareaProyecto t = tareaRepo.buscarPorId(id).orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
         if (dto.getNombre() != null) t.setNombre(dto.getNombre());

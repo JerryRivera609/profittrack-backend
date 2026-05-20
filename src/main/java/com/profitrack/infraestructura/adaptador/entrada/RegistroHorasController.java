@@ -24,6 +24,17 @@ public class RegistroHorasController {
         return ResponseEntity.status(HttpStatus.CREATED).body(useCase.registrar(ctx.getUserId(), dto));
     }
 
+    @GetMapping("/resumen")
+    public ResponseEntity<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto> resumen(
+            @RequestParam(required = false) Long proyectoId,
+            @RequestParam(required = false) Long empleadoId,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fechaInicio,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fechaFin
+    ) {
+        Long empresaId = ctx.getEmpresaId();
+        return ResponseEntity.ok(useCase.obtenerResumen(empresaId, proyectoId, empleadoId, fechaInicio, fechaFin));
+    }
+
     @GetMapping("/mis-horas")
     public ResponseEntity<List<RegistroHorasResponseDto>> misHoras() {
         return ResponseEntity.ok(useCase.listarPorEmpleado(ctx.getUserId()));

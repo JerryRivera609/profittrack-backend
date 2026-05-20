@@ -80,6 +80,22 @@ public class ProyectoService implements ProyectoUseCase {
     }
 
     @Override
+    public List<ProyectoResponseDto> listarInactivosPorEmpresa(Long empresaId) {
+        return proyectoRepository.buscarInactivosPorEmpresa(empresaId)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ProyectoResponseDto reactivar(Long id) {
+        Proyecto proyecto = proyectoRepository.buscarPorId(id)
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado con id: " + id));
+        proyecto.setActivo(true);
+        return toDto(proyectoRepository.guardar(proyecto));
+    }
+
+    @Override
     public ProyectoResponseDto actualizar(Long id, ProyectoPatchDto dto) {
         Proyecto proyecto = proyectoRepository.buscarPorId(id)
                 .filter(Proyecto::getActivo)

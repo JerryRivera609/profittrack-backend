@@ -74,6 +74,22 @@ public class EmpleadoService implements EmpleadoUseCase {
     }
 
     @Override
+    public List<EmpleadoResponseDto> listarInactivosPorEmpresa(Long empresaId) {
+        return empleadoRepository.buscarInactivosPorEmpresa(empresaId)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public EmpleadoResponseDto reactivar(Long id) {
+        Empleado empleado = empleadoRepository.buscarPorId(id)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + id));
+        empleado.setActivo(true);
+        return toDto(empleadoRepository.guardar(empleado));
+    }
+
+    @Override
     public EmpleadoResponseDto actualizar(Long id, EmpleadoPatchDto dto) {
         Empleado empleado = empleadoRepository.buscarPorId(id)
                 .filter(Empleado::getActivo)

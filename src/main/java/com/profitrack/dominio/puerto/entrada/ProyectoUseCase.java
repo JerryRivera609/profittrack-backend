@@ -10,6 +10,8 @@ public interface ProyectoUseCase {
     ProyectoResponseDto crear(ProyectoRequestDto dto);
     ProyectoResponseDto obtenerPorId(Long id);
     List<ProyectoResponseDto> listarActivosPorEmpresa(Long empresaId);
+    List<ProyectoResponseDto> listarInactivosPorEmpresa(Long empresaId);
     ProyectoResponseDto actualizar(Long id, ProyectoPatchDto dto);
     void eliminar(Long id);
+    ProyectoResponseDto reactivar(Long id);
 }

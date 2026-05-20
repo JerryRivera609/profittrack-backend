@@ -10,6 +10,8 @@ public interface EmpleadoUseCase {
     EmpleadoResponseDto crear(EmpleadoRequestDto dto);
     EmpleadoResponseDto obtenerPorId(Long id);
     List<EmpleadoResponseDto> listarActivosPorEmpresa(Long empresaId);
+    List<EmpleadoResponseDto> listarInactivosPorEmpresa(Long empresaId);
     EmpleadoResponseDto actualizar(Long id, EmpleadoPatchDto dto);
     void eliminar(Long id);
+    EmpleadoResponseDto reactivar(Long id);
 }

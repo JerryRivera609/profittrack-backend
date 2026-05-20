@@ -6,4 +6,5 @@ public interface TareaProyectoRepository {
     TareaProyecto guardar(TareaProyecto t);
     Optional<TareaProyecto> buscarPorId(Long id);
     List<TareaProyecto> buscarActivasPorProyecto(Long proyectoId);
+    List<TareaProyecto> buscarInactivasPorProyecto(Long proyectoId);
 }

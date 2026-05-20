@@ -29,4 +29,9 @@ public class ClienteRepositoryAdapter implements ClienteRepository {
     public List<Cliente> buscarActivosPorEmpresa(Long empresaId) {
         return jpaRepository.findAllByEmpresaIdAndActivoTrue(empresaId);
     }
+
+    @Override
+    public List<Cliente> buscarInactivosPorEmpresa(Long empresaId) {
+        return jpaRepository.findAllByEmpresaIdAndActivoFalse(empresaId);
+    }
 }

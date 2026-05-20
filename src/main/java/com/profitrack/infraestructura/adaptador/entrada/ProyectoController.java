@@ -44,6 +44,19 @@ public class ProyectoController {
         return ResponseEntity.ok(proyectoUseCase.listarActivosPorEmpresa(empresaId));
     }
 
+    @GetMapping("/inactivos")
+    public ResponseEntity<List<ProyectoResponseDto>> listarInactivosPorEmpresa() {
+        securityContext.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
+        Long empresaId = securityContext.getEmpresaId();
+        return ResponseEntity.ok(proyectoUseCase.listarInactivosPorEmpresa(empresaId));
+    }
+
+    @PatchMapping("/{id}/reactivar")
+    public ResponseEntity<ProyectoResponseDto> reactivar(@PathVariable Long id) {
+        securityContext.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
+        return ResponseEntity.ok(proyectoUseCase.reactivar(id));
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<ProyectoResponseDto> actualizar(
             @PathVariable Long id,

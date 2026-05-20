@@ -45,6 +45,19 @@ public class EmpleadoController {
         return ResponseEntity.ok(empleadoUseCase.listarActivosPorEmpresa(empresaId));
     }
 
+    @GetMapping("/inactivos")
+    public ResponseEntity<List<EmpleadoResponseDto>> listarInactivosPorEmpresa() {
+        securityContext.validarRol(RolConstantes.ADMINISTRADOR, RolConstantes.OWNER);
+        Long empresaId = securityContext.getEmpresaId();
+        return ResponseEntity.ok(empleadoUseCase.listarInactivosPorEmpresa(empresaId));
+    }
+
+    @PatchMapping("/{id}/reactivar")
+    public ResponseEntity<EmpleadoResponseDto> reactivar(@PathVariable Long id) {
+        securityContext.validarRol(RolConstantes.ADMINISTRADOR, RolConstantes.OWNER);
+        return ResponseEntity.ok(empleadoUseCase.reactivar(id));
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<EmpleadoResponseDto> actualizar(
             @PathVariable Long id,

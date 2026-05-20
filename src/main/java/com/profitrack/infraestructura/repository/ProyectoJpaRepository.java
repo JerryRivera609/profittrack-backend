@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ProyectoJpaRepository extends JpaRepository<Proyecto, Long> {
     List<Proyecto> findAllByEmpresaIdAndActivoTrue(Long empresaId);
+    List<Proyecto> findAllByEmpresaIdAndActivoFalse(Long empresaId);
 }

@@ -101,6 +101,73 @@ public class RegistroHorasService implements RegistroHorasUseCase {
         rhRepo.guardar(rh);
     }
 
+    @Override
+    public com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto obtenerResumen(
+            Long empresaId, Long proyectoId, Long empleadoId, 
+            java.time.LocalDate fechaInicio, java.time.LocalDate fechaFin) {
+        
+        List<RegistroHoras> todos = rhRepo.buscarActivosPorEmpresa(empresaId);
+
+        List<RegistroHoras> filtrados = todos.stream()
+                .filter(rh -> proyectoId == null || rh.getProyecto().getId().equals(proyectoId))
+                .filter(rh -> empleadoId == null || rh.getEmpleado().getId().equals(empleadoId))
+                .filter(rh -> fechaInicio == null || !rh.getFechaTrabajo().isBefore(fechaInicio))
+                .filter(rh -> fechaFin == null || !rh.getFechaTrabajo().isAfter(fechaFin))
+                .collect(Collectors.toList());
+
+        BigDecimal totalRegistradas = filtrados.stream()
+                .map(rh -> rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalAprobadas = filtrados.stream()
+                .filter(RegistroHoras::getAprobado)
+                .map(rh -> rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalPendientes = totalRegistradas.subtract(totalAprobadas);
+
+        java.util.Map<Proyecto, BigDecimal> porProyecto = filtrados.stream()
+                .collect(Collectors.groupingBy(
+                        RegistroHoras::getProyecto,
+                        Collectors.reducing(BigDecimal.ZERO, 
+                                rh -> rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas() : BigDecimal.ZERO, 
+                                BigDecimal::add)
+                ));
+
+        List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorProyectoDto> proyectoDtos = porProyecto.entrySet().stream()
+                .map(entry -> com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorProyectoDto.builder()
+                        .proyectoId(entry.getKey().getId())
+                        .proyectoNombre(entry.getKey().getNombre())
+                        .horas(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        java.util.Map<Empleado, BigDecimal> porEmpleado = filtrados.stream()
+                .collect(Collectors.groupingBy(
+                        RegistroHoras::getEmpleado,
+                        Collectors.reducing(BigDecimal.ZERO, 
+                                rh -> rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas() : BigDecimal.ZERO, 
+                                BigDecimal::add)
+                ));
+
+        List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorEmpleadoDto> empleadoDtos = porEmpleado.entrySet().stream()
+                .map(entry -> com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorEmpleadoDto.builder()
+                        .empleadoId(entry.getKey().getId())
+                        .empleadoNombre(entry.getKey().getNombres() + " " + entry.getKey().getApellidos())
+                        .horas(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.builder()
+                .totalHorasRegistradas(totalRegistradas)
+                .totalHorasAprobadas(totalAprobadas)
+                .totalHorasPendientes(totalPendientes)
+                .totalHorasRechazadas(BigDecimal.ZERO)
+                .horasPorProyecto(proyectoDtos)
+                .horasPorEmpleado(empleadoDtos)
+                .build();
+    }
+
     private RegistroHorasResponseDto toDto(RegistroHoras rh) {
         return RegistroHorasResponseDto.builder()
                 .id(rh.getId())

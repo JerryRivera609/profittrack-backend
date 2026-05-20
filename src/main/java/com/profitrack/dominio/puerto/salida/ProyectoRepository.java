@@ -9,4 +9,5 @@ public interface ProyectoRepository {
     Proyecto guardar(Proyecto proyecto);
     Optional<Proyecto> buscarPorId(Long id);
     List<Proyecto> buscarActivosPorEmpresa(Long empresaId);
+    List<Proyecto> buscarInactivosPorEmpresa(Long empresaId);
 }

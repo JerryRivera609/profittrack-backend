@@ -31,6 +31,11 @@ public class EmpleadoRepositoryAdapter implements EmpleadoRepository {
     }
 
     @Override
+    public List<Empleado> buscarInactivosPorEmpresa(Long empresaId) {
+        return jpaRepository.findAllByEmpresaIdAndActivoFalse(empresaId);
+    }
+
+    @Override
     public boolean existePorCorreo(String correo) {
         return jpaRepository.existsByCorreo(correo);
     }

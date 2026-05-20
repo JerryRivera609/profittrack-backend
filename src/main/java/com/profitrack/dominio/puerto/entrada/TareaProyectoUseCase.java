@@ -6,6 +6,8 @@ import java.util.List;
 public interface TareaProyectoUseCase {
     TareaProyectoResponseDto crear(TareaProyectoRequestDto dto);
     List<TareaProyectoResponseDto> listarPorProyecto(Long proyectoId);
+    List<TareaProyectoResponseDto> listarInactivasPorProyecto(Long proyectoId);
     TareaProyectoResponseDto actualizar(Long id, TareaProyectoPatchDto dto);
     void eliminar(Long id);
+    TareaProyectoResponseDto reactivar(Long id);
 }

@@ -57,6 +57,22 @@ public class ClienteService implements ClienteUseCase {
     }
 
     @Override
+    public List<ClienteResponseDto> listarInactivosPorEmpresa(Long empresaId) {
+        return clienteRepository.buscarInactivosPorEmpresa(empresaId)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ClienteResponseDto reactivar(Long id) {
+        Cliente cliente = clienteRepository.buscarPorId(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
+        cliente.setActivo(true);
+        return toDto(clienteRepository.guardar(cliente));
+    }
+
+    @Override
     public ClienteResponseDto actualizar(Long id, ClientePatchDto dto) {
         Cliente cliente = clienteRepository.buscarPorId(id)
                 .filter(Cliente::getActivo)

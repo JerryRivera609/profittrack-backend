@@ -9,4 +9,5 @@ public interface ClienteRepository {
     Cliente guardar(Cliente cliente);
     Optional<Cliente> buscarPorId(Long id);
     List<Cliente> buscarActivosPorEmpresa(Long empresaId);
+    List<Cliente> buscarInactivosPorEmpresa(Long empresaId);
 }

@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface EmpleadoJpaRepository extends JpaRepository<Empleado, Long> {
     List<Empleado> findAllByEmpresaIdAndActivoTrue(Long empresaId);
+    List<Empleado> findAllByEmpresaIdAndActivoFalse(Long empresaId);
     boolean existsByCorreo(String correo);
     boolean existsByCorreoAndIdNot(String correo, Long id);
     Optional<Empleado> findByCorreoAndActivoTrue(String correo);

@@ -12,4 +12,5 @@ public class TareaProyectoRepositoryAdapter implements TareaProyectoRepository {
     @Override public TareaProyecto guardar(TareaProyecto t) { return jpa.save(t); }
     @Override public Optional<TareaProyecto> buscarPorId(Long id) { return jpa.findById(id); }
     @Override public List<TareaProyecto> buscarActivasPorProyecto(Long proyectoId) { return jpa.findAllByProyectoIdAndActivoTrue(proyectoId); }
+    @Override public List<TareaProyecto> buscarInactivasPorProyecto(Long proyectoId) { return jpa.findAllByProyectoIdAndActivoFalse(proyectoId); }
 }

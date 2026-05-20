@@ -7,4 +7,5 @@ public interface RegistroHorasRepository {
     Optional<RegistroHoras> buscarPorId(Long id);
     List<RegistroHoras> buscarActivosPorProyecto(Long proyectoId);
     List<RegistroHoras> buscarActivosPorEmpleado(Long empleadoId);
+    List<RegistroHoras> buscarActivosPorEmpresa(Long empresaId);
 }

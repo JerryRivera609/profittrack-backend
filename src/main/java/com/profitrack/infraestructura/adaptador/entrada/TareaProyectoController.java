@@ -25,6 +25,15 @@ public class TareaProyectoController {
     public ResponseEntity<List<TareaProyectoResponseDto>> listar(@PathVariable Long proyectoId) {
         return ResponseEntity.ok(useCase.listarPorProyecto(proyectoId));
     }
+    @GetMapping("/proyecto/{proyectoId}/inactivas")
+    public ResponseEntity<List<TareaProyectoResponseDto>> listarInactivas(@PathVariable Long proyectoId) {
+        return ResponseEntity.ok(useCase.listarInactivasPorProyecto(proyectoId));
+    }
+    @PatchMapping("/{id}/reactivar")
+    public ResponseEntity<TareaProyectoResponseDto> reactivar(@PathVariable Long id) {
+        ctx.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
+        return ResponseEntity.ok(useCase.reactivar(id));
+    }
     @PatchMapping("/{id}")
     public ResponseEntity<TareaProyectoResponseDto> actualizar(@PathVariable Long id, @RequestBody @Valid TareaProyectoPatchDto dto) {
         ctx.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
