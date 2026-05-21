@@ -4,6 +4,8 @@ services:
     container_name: profittrack-backend
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       - SERVER_FORWARD_HEADERS_STRATEGY=framework
       - TZ=America/Lima
