@@ -18,11 +18,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           envs: DB_URL,DB_USER,DB_PASSWORD,JWT_SECRET
-          with:
-            DB_URL: ${{ secrets.DB_URL }}
-            DB_USER: ${{ secrets.DB_USER }}
-            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-            JWT_SECRET: ${{ secrets.JWT_SECRET }}
           script: |
             cd /opt/apps/profittrack-backend
 
@@ -35,3 +30,8 @@ jobs:
             echo "JWT_SECRET=$JWT_SECRET" >> .env
 
             docker compose up -d --build
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
