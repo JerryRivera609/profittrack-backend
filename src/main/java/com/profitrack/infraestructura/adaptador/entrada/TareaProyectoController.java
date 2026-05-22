@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-@RestController @RequestMapping("/api/tareas") @RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/tareas")
+@RequiredArgsConstructor
 public class TareaProyectoController {
     private final TareaProyectoUseCase useCase;
     private final SecurityContextUtils ctx;
@@ -21,27 +23,34 @@ public class TareaProyectoController {
         ctx.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
         return ResponseEntity.status(HttpStatus.CREATED).body(useCase.crear(dto));
     }
+
     @GetMapping("/proyecto/{proyectoId}")
     public ResponseEntity<List<TareaProyectoResponseDto>> listar(@PathVariable Long proyectoId) {
         return ResponseEntity.ok(useCase.listarPorProyecto(proyectoId));
     }
+
     @GetMapping("/proyecto/{proyectoId}/inactivas")
     public ResponseEntity<List<TareaProyectoResponseDto>> listarInactivas(@PathVariable Long proyectoId) {
         return ResponseEntity.ok(useCase.listarInactivasPorProyecto(proyectoId));
     }
+
     @PatchMapping("/{id}/reactivar")
     public ResponseEntity<TareaProyectoResponseDto> reactivar(@PathVariable Long id) {
         ctx.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
         return ResponseEntity.ok(useCase.reactivar(id));
     }
+
     @PatchMapping("/{id}")
-    public ResponseEntity<TareaProyectoResponseDto> actualizar(@PathVariable Long id, @RequestBody @Valid TareaProyectoPatchDto dto) {
+    public ResponseEntity<TareaProyectoResponseDto> actualizar(@PathVariable Long id,
+            @RequestBody @Valid TareaProyectoPatchDto dto) {
         ctx.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
         return ResponseEntity.ok(useCase.actualizar(id, dto));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         ctx.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
-        useCase.eliminar(id); return ResponseEntity.noContent().build();
+        useCase.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

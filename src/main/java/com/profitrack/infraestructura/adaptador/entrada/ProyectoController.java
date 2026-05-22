@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestión de proyectos (HU-04).
- * RBAC: Owner, PM o Gerente pueden crear/modificar proyectos.
- */
 @RestController
 @RequestMapping("/api/proyectos")
 @RequiredArgsConstructor

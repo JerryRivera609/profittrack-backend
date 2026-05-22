@@ -29,8 +29,7 @@ public class RegistroHorasController {
             @RequestParam(required = false) Long proyectoId,
             @RequestParam(required = false) Long empleadoId,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fechaInicio,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fechaFin
-    ) {
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fechaFin) {
         Long empresaId = ctx.getEmpresaId();
         return ResponseEntity.ok(useCase.obtenerResumen(empresaId, proyectoId, empleadoId, fechaInicio, fechaFin));
     }

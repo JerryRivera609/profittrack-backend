@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestión de clientes.
- * RBAC: Owner, Administrador o PM pueden gestionar clientes.
- */
 @RestController
 @RequestMapping("/api/clientes")
 @RequiredArgsConstructor

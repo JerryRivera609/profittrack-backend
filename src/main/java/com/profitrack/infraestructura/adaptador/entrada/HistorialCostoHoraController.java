@@ -22,7 +22,8 @@ public class HistorialCostoHoraController {
     private final SecurityContextUtils securityContext;
 
     @PostMapping
-    public ResponseEntity<HistorialCostoHoraResponseDto> registrarCosto(@Valid @RequestBody HistorialCostoHoraRequestDto dto) {
+    public ResponseEntity<HistorialCostoHoraResponseDto> registrarCosto(
+            @Valid @RequestBody HistorialCostoHoraRequestDto dto) {
         securityContext.validarRol(RolConstantes.ADMINISTRADOR, RolConstantes.OWNER, RolConstantes.GERENTE);
         return ResponseEntity.status(HttpStatus.CREATED).body(useCase.registrarCosto(dto));
     }

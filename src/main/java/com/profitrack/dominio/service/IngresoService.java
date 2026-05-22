@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service @RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class IngresoService implements IngresoUseCase {
     private final IngresoRepository ingresoRepo;
     private final EmpresaRepository empresaRepo;
@@ -18,7 +19,8 @@ public class IngresoService implements IngresoUseCase {
 
     @Override
     public IngresoResponseDto crear(IngresoRequestDto dto) {
-        Empresa emp = empresaRepo.buscarPorId(dto.getEmpresaId()).orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+        Empresa emp = empresaRepo.buscarPorId(dto.getEmpresaId())
+                .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
         Proyecto proy = dto.getProyectoId() != null ? proyectoRepo.buscarPorId(dto.getProyectoId()).orElse(null) : null;
         Ingreso i = ingresoRepo.guardar(Ingreso.builder()
                 .empresa(emp).proyecto(proy)
@@ -28,17 +30,21 @@ public class IngresoService implements IngresoUseCase {
         return toDto(i);
     }
 
-    @Override public List<IngresoResponseDto> listarPorEmpresa(Long empresaId) {
+    @Override
+    public List<IngresoResponseDto> listarPorEmpresa(Long empresaId) {
         return ingresoRepo.buscarActivosPorEmpresa(empresaId).stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    @Override public List<IngresoResponseDto> listarPorProyecto(Long proyectoId) {
+    @Override
+    public List<IngresoResponseDto> listarPorProyecto(Long proyectoId) {
         return ingresoRepo.buscarActivosPorProyecto(proyectoId).stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    @Override public void eliminar(Long id) {
+    @Override
+    public void eliminar(Long id) {
         Ingreso i = ingresoRepo.buscarPorId(id).orElseThrow(() -> new RuntimeException("Ingreso no encontrado"));
-        i.setActivo(false); ingresoRepo.guardar(i);
+        i.setActivo(false);
+        ingresoRepo.guardar(i);
     }
 
     private IngresoResponseDto toDto(Ingreso i) {

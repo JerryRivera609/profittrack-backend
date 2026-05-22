@@ -25,7 +25,8 @@ public class TipoTareaController {
     @PostMapping
     public ResponseEntity<TipoTareaResponseDto> crear(@Valid @RequestBody TipoTareaRequestDto dto) {
         dto.setEmpresaId(securityUtils.getEmpresaId());
-        securityUtils.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER, RolConstantes.ADMINISTRADOR);
+        securityUtils.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER,
+                RolConstantes.ADMINISTRADOR);
         return ResponseEntity.status(HttpStatus.CREATED).body(tipoTareaUseCase.crear(dto));
     }
 
@@ -48,7 +49,8 @@ public class TipoTareaController {
             @Valid @RequestBody TipoTareaPatchDto dto) {
         TipoTareaResponseDto res = tipoTareaUseCase.obtenerPorId(id);
         validarEmpresa(res.getEmpresaId());
-        securityUtils.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER, RolConstantes.ADMINISTRADOR);
+        securityUtils.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER,
+                RolConstantes.ADMINISTRADOR);
         return ResponseEntity.ok(tipoTareaUseCase.actualizar(id, dto));
     }
 
@@ -56,7 +58,8 @@ public class TipoTareaController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         TipoTareaResponseDto res = tipoTareaUseCase.obtenerPorId(id);
         validarEmpresa(res.getEmpresaId());
-        securityUtils.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER, RolConstantes.ADMINISTRADOR);
+        securityUtils.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER,
+                RolConstantes.ADMINISTRADOR);
         tipoTareaUseCase.eliminar(id);
         return ResponseEntity.noContent().build();
     }

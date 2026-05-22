@@ -31,7 +31,6 @@ public class PlanillaService implements PlanillaUseCase {
     private static final BigDecimal HORAS_DIA = new BigDecimal("8");
     private static final BigDecimal HORAS_LABORALES_MES = DIAS_MES_ESTANDAR.multiply(HORAS_DIA); // 240 horas
 
-
     @Override
     @Transactional
     public PlanillaResponseDto crear(PlanillaRequestDto dto) {
@@ -56,7 +55,7 @@ public class PlanillaService implements PlanillaUseCase {
                 detalles.add(detalle);
                 total = total.add(sueldoFinal);
 
-                // Auto-registrar costo hora derivado del sueldo base
+                // aca registramos el costo x hora q sacamos de su sueldo base
                 if (base.compareTo(BigDecimal.ZERO) > 0) {
                     BigDecimal costoHora = base.divide(HORAS_LABORALES_MES, 2, RoundingMode.HALF_UP);
                     LocalDate fechaInicio = LocalDate.of(dto.getAnio(), dto.getMes(), 1);
@@ -64,7 +63,7 @@ public class PlanillaService implements PlanillaUseCase {
                         historialCostoHoraUseCase.registrarCosto(
                                 buildHistorialRequest(empleado.getId(), costoHora, fechaInicio));
                     } catch (RuntimeException e) {
-                        // Si la tarifa ya existe para esa fecha, no interrumpir la planilla
+                        // si ya existe tarifa pa esta fecha lo saltamos nomas pa no romper nada
                     }
                 }
             }
@@ -74,7 +73,8 @@ public class PlanillaService implements PlanillaUseCase {
         return toDto(planilla, detalles);
     }
 
-    private HistorialCostoHoraRequestDto buildHistorialRequest(Long empleadoId, BigDecimal costoHora, LocalDate fechaInicio) {
+    private HistorialCostoHoraRequestDto buildHistorialRequest(Long empleadoId, BigDecimal costoHora,
+            LocalDate fechaInicio) {
         HistorialCostoHoraRequestDto req = new HistorialCostoHoraRequestDto();
         req.setEmpleadoId(empleadoId);
         req.setCostoHora(costoHora);
@@ -103,6 +103,7 @@ public class PlanillaService implements PlanillaUseCase {
                         .empleadoNombre(d.getEmpleado().getNombres() + " " + d.getEmpleado().getApellidos())
                         .sueldoBase(d.getSueldoBase()).bonos(d.getBonos())
                         .descuentos(d.getDescuentos()).sueldoFinal(d.getSueldoFinal()).build())
-                        .collect(Collectors.toList())).build();
+                        .collect(Collectors.toList()))
+                .build();
     }
 }

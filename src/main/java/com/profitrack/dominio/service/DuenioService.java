@@ -25,7 +25,7 @@ public class DuenioService implements DuenioUseCase {
 
     @Override
     public DuenioResponseDto crear(DuenioRequestDto dto) {
-        // Validar que la empresa exista y esté activa
+        // chekeamos q la empresa exista y siga viva
         Empresa empresa = empresaRepository.buscarPorId(dto.getEmpresaId())
                 .filter(Empresa::getActivo)
                 .orElseThrow(() -> new RuntimeException("Empresa no encontrada con id: " + dto.getEmpresaId()));
@@ -68,11 +68,14 @@ public class DuenioService implements DuenioUseCase {
                 .filter(Duenio::getActivo)
                 .orElseThrow(() -> new RuntimeException("Owner no encontrado con id: " + id));
 
-        if (dto.getNombres()    != null) duenio.setNombres(dto.getNombres());
-        if (dto.getApellidos()  != null) duenio.setApellidos(dto.getApellidos());
-        if (dto.getContrasenia() != null) duenio.setContrasenia(passwordEncoder.encode(dto.getContrasenia()));
+        if (dto.getNombres() != null)
+            duenio.setNombres(dto.getNombres());
+        if (dto.getApellidos() != null)
+            duenio.setApellidos(dto.getApellidos());
+        if (dto.getContrasenia() != null)
+            duenio.setContrasenia(passwordEncoder.encode(dto.getContrasenia()));
 
-        // Correo: validar unicidad solo si cambió
+        // validar unicidad del corero
         if (dto.getCorreo() != null && !dto.getCorreo().equals(duenio.getCorreo())) {
             if (duenioRepository.existePorCorreo(dto.getCorreo())) {
                 throw new RuntimeException("Ya existe un owner con el correo: " + dto.getCorreo());

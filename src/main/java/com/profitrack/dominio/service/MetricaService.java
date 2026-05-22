@@ -59,7 +59,7 @@ public class MetricaService implements MetricaUseCase {
                 .horasReales(horasReales)
                 .build());
 
-        // Actualizar el proyecto con los datos reales
+        // le metemos los datos reales al proyecto despues de calcular
         proyecto.setCostoReal(costoReal);
         proyecto.setHorasReales(horasReales);
         proyecto.setMargenReal(margenReal);
@@ -95,7 +95,8 @@ public class MetricaService implements MetricaUseCase {
         BigDecimal margenPlanificado = ingresoPlanificado.subtract(costoPlanificado);
 
         BigDecimal porcentajeMargen = ingresoReal.compareTo(BigDecimal.ZERO) > 0
-                ? margenReal.divide(ingresoReal, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100"))
+                ? margenReal.divide(ingresoReal, 4, RoundingMode.HALF_UP)
+                        .multiply(new BigDecimal("100"))
                 : BigDecimal.ZERO;
 
         BigDecimal cpi = costoPlanificado.compareTo(BigDecimal.ZERO) > 0
@@ -129,11 +130,12 @@ public class MetricaService implements MetricaUseCase {
                 .build();
     }
 
-    // --- Métodos privados de cálculo ---
+    // metodos privados de calculop
 
     private BigDecimal calcularCostoLaboral(Long proyectoId) {
         return costoRegistroRepo.buscarPorProyecto(proyectoId).stream()
-                .filter(c -> c.getRegistroHoras() != null && Boolean.TRUE.equals(c.getRegistroHoras().getAprobado()))
+                .filter(c -> c.getRegistroHoras() != null
+                        && Boolean.TRUE.equals(c.getRegistroHoras().getAprobado()))
                 .map(c -> safeValue(c.getCostoTotal()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -161,7 +163,8 @@ public class MetricaService implements MetricaUseCase {
         return value != null ? value : BigDecimal.ZERO;
     }
 
-    private MetricaSnapshotResponseDto toSnapshotDto(MetricaProyecto m, BigDecimal costoLaboral, BigDecimal costoOpex) {
+    private MetricaSnapshotResponseDto toSnapshotDto(MetricaProyecto m, BigDecimal costoLaboral,
+            BigDecimal costoOpex) {
         return MetricaSnapshotResponseDto.builder()
                 .id(m.getId())
                 .proyectoId(m.getProyecto().getId())

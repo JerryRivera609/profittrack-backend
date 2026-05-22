@@ -13,10 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * Busca credenciales primero en empleados, luego en owners (dueños).
- * Implementa UserDetailsService para integración con AuthenticationManager de Spring Security.
- */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
@@ -26,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-        // 1. Buscar en empleados
+        // checkeamos primero si el q se loguea es un dev o pm
         Optional<Empleado> empleadoOpt = empleadoRepository.buscarPorCorreoYActivo(correo);
         if (empleadoOpt.isPresent()) {
             Empleado e = empleadoOpt.get();

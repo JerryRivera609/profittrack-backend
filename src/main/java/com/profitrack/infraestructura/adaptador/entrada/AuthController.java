@@ -28,10 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-/**
- * Controlador de autenticación (HU-01).
- * Login multi-actor: busca primero en empleados, luego en dueños.
- */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -42,24 +38,21 @@ public class AuthController {
     private final DuenioRepository duenioRepo;
     private final TokenService tokenService;
 
-    // ── DTOs internos ──
-
+    // dto privado
     public record LoginRequest(
             @NotBlank @Email String correo,
             @NotBlank String contrasenia) {
     }
 
-    // ── Endpoints ──
-
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest req,
             HttpServletRequest httpReq,
             HttpServletResponse httpRes) {
-        // 1. Spring Security valida credenciales (via CustomUserDetailsService)
+        // validar credenciales
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.correo(), req.contrasenia()));
 
-        // 2. Buscar quién se logueó y crear sesión con JWT multi-tenant
+        // armar sesion con el token
         Optional<Empleado> empleadoOpt = empleadoRepo.buscarPorCorreoYActivo(req.correo());
         if (empleadoOpt.isPresent()) {
             Empleado emp = empleadoOpt.get();
@@ -106,7 +99,6 @@ public class AuthController {
                             .orElseThrow(() -> new RuntimeException("Dueño no encontrado"));
                     return tokenService.buildJwtDuenio(duenio, sessionId);
                 } else {
-                    // Fallback para sesiones antiguas sin userType
                     Optional<Empleado> empOpt = empleadoRepo.buscarPorId(userId);
                     if (empOpt.isPresent()) {
                         return tokenService.buildJwtEmpleado(empOpt.get(), sessionId);
@@ -131,7 +123,7 @@ public class AuthController {
                 Jwt jwt = tokenService.decode(token);
                 tokenService.revocarSesion(jwt.getClaimAsString("sessionId"));
             } catch (Exception ignored) {
-                // Si el token ya expiró, solo limpiamos las cookies
+                // limpiamos las cookies
             }
         }
         clearCookies(res);

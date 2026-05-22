@@ -35,7 +35,7 @@ public class HistorialCostoHoraService implements HistorialCostoHoraUseCase {
         Empleado empleado = empleadoRepository.buscarPorId(dto.getEmpleadoId())
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + dto.getEmpleadoId()));
 
-        // 1. Cerrar tarifa global vigente si existe
+        // captar la tarifa global q esta activa
         Optional<HistorialCostoHoraEmpleado> vigenteOpt = costRepository.buscarVigentePorEmpleado(dto.getEmpleadoId());
         if (vigenteOpt.isPresent()) {
             HistorialCostoHoraEmpleado vigente = vigenteOpt.get();
@@ -55,16 +55,17 @@ public class HistorialCostoHoraService implements HistorialCostoHoraUseCase {
                 .build();
         HistorialCostoHoraEmpleado guardado = costRepository.guardar(nuevoCosto);
 
-        // 2. Propagar a todos los proyectos activos donde esté asignado
+        // pasamos el update a todos los proyectos donde este asignado el dev
         propagarATodosLosProyectos(empleado, dto.getCostoHora(), dto.getFechaInicio());
 
         return toDto(guardado);
     }
 
-    private void propagarATodosLosProyectos(Empleado empleado, java.math.BigDecimal nuevoCostoHora, LocalDate fechaEfectiva) {
+    private void propagarATodosLosProyectos(Empleado empleado, java.math.BigDecimal nuevoCostoHora,
+            LocalDate fechaEfectiva) {
         List<ProyectoEmpleado> asignaciones = peRepo.buscarActivosPorEmpleado(empleado.getId());
         for (ProyectoEmpleado pe : asignaciones) {
-            // Cerrar tarifa vigente en ese proyecto
+            // cerramos la tarifa vieja q tenia en ese proyecto
             Optional<ProyectoCostoEmpleado> costoVigente = costoProyectoRepo.buscarActivoPorProyectoYEmpleado(
                     pe.getProyecto().getId(), empleado.getId());
             if (costoVigente.isPresent()) {
@@ -72,7 +73,7 @@ public class HistorialCostoHoraService implements HistorialCostoHoraUseCase {
                 vigente.setFechaFin(fechaEfectiva.minusDays(1));
                 costoProyectoRepo.guardar(vigente);
             }
-            // Crear nueva tarifa para el proyecto
+            // le metemos la nueva tarifa pa las sgtes horas q reporte
             costoProyectoRepo.guardar(ProyectoCostoEmpleado.builder()
                     .proyecto(pe.getProyecto())
                     .empleado(empleado)

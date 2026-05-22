@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestión de dueños/owners.
- * RBAC: Solo el Owner puede gestionar otros owners de su empresa.
- */
 @RestController
 @RequestMapping("/api/duenios")
 @RequiredArgsConstructor

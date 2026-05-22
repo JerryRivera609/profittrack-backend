@@ -7,13 +7,14 @@ import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-@Service @RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class AuditoriaService {
     private final AuditoriaRepository auditoriaRepo;
     private final SecurityContextUtils ctx;
 
     public void registrar(String entidad, Long entidadId, AccionAuditoria accion,
-                          String valoresAnteriores, String valoresNuevos) {
+            String valoresAnteriores, String valoresNuevos) {
         auditoriaRepo.guardar(Auditoria.builder()
                 .tipoUsuario(ctx.getTipo())
                 .usuarioId(ctx.getUserId())

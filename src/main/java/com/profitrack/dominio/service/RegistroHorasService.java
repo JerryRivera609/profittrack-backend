@@ -49,12 +49,14 @@ public class RegistroHorasService implements RegistroHorasUseCase {
 
     @Override
     public List<RegistroHorasResponseDto> listarPorProyecto(Long proyectoId) {
-        return rhRepo.buscarActivosPorProyecto(proyectoId).stream().map(this::toDto).collect(Collectors.toList());
+        return rhRepo.buscarActivosPorProyecto(proyectoId).stream().map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<RegistroHorasResponseDto> listarPorEmpleado(Long empleadoId) {
-        return rhRepo.buscarActivosPorEmpleado(empleadoId).stream().map(this::toDto).collect(Collectors.toList());
+        return rhRepo.buscarActivosPorEmpleado(empleadoId).stream().map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -68,28 +70,32 @@ public class RegistroHorasService implements RegistroHorasUseCase {
         rh.setAprobado(true);
         rhRepo.guardar(rh);
 
-        // Limpiar cualquier cálculo previo de costo para este registro
+        // limpiamos cualquier costo viejo q haya quedado colgado por si acaso
         costoRhRepo.eliminarPorRegistroHoras(id);
 
         BigDecimal costoHora = costoEmpRepo.buscarActivoPorProyectoYEmpleado(
-                        rh.getProyecto().getId(), rh.getEmpleado().getId())
+                rh.getProyecto().getId(), rh.getEmpleado().getId())
                 .map(ProyectoCostoEmpleado::getCostoHora)
                 .orElse(BigDecimal.ZERO);
 
         BigDecimal costoTotal;
-        BigDecimal horasTrabajadas = rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas() : BigDecimal.ZERO;
+        BigDecimal horasTrabajadas = rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas()
+                : BigDecimal.ZERO;
 
         if (rh.getTarea() != null) {
-            List<RegistroHoras> approvedForTask = rhRepo.buscarActivosPorTarea(rh.getTarea().getId()).stream()
-                    .filter(r -> Boolean.TRUE.equals(r.getAprobado()) && !r.getId().equals(rh.getId()))
+            List<RegistroHoras> approvedForTask = rhRepo.buscarActivosPorTarea(rh.getTarea().getId())
+                    .stream()
+                    .filter(r -> Boolean.TRUE.equals(r.getAprobado())
+                            && !r.getId().equals(rh.getId()))
                     .toList();
 
             BigDecimal previouslyApprovedHours = approvedForTask.stream()
-                    .map(r -> r.getHorasTrabajadas() != null ? r.getHorasTrabajadas() : BigDecimal.ZERO)
+                    .map(r -> r.getHorasTrabajadas() != null ? r.getHorasTrabajadas()
+                            : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            BigDecimal horasPlanificadas = rh.getTarea().getHorasPlanificadas() != null 
-                    ? rh.getTarea().getHorasPlanificadas() 
+            BigDecimal horasPlanificadas = rh.getTarea().getHorasPlanificadas() != null
+                    ? rh.getTarea().getHorasPlanificadas()
                     : BigDecimal.ZERO;
 
             BigDecimal remainingHours = horasPlanificadas.subtract(previouslyApprovedHours);
@@ -125,21 +131,24 @@ public class RegistroHorasService implements RegistroHorasUseCase {
             return toDto(rh);
         }
         rh.setAprobado(false);
-        
-        // Al rechazar, eliminamos el costo calculado para este registro de horas
+
+        // si el pm rechaza, eliminamos el costo calculado para q no sume al proyecto
         costoRhRepo.eliminarPorRegistroHoras(id);
-        
+
         if (rh.getTarea() != null) {
-            List<RegistroHoras> approvedForTask = rhRepo.buscarActivosPorTarea(rh.getTarea().getId()).stream()
-                    .filter(r -> Boolean.TRUE.equals(r.getAprobado()) && !r.getId().equals(rh.getId()))
+            List<RegistroHoras> approvedForTask = rhRepo.buscarActivosPorTarea(rh.getTarea().getId())
+                    .stream()
+                    .filter(r -> Boolean.TRUE.equals(r.getAprobado())
+                            && !r.getId().equals(rh.getId()))
                     .toList();
             BigDecimal newHorasReales = approvedForTask.stream()
-                    .map(r -> r.getHorasTrabajadas() != null ? r.getHorasTrabajadas() : BigDecimal.ZERO)
+                    .map(r -> r.getHorasTrabajadas() != null ? r.getHorasTrabajadas()
+                            : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             rh.getTarea().setHorasReales(newHorasReales);
             tareaRepo.guardar(rh.getTarea());
         }
-        
+
         return toDto(rhRepo.guardar(rh));
     }
 
@@ -151,15 +160,18 @@ public class RegistroHorasService implements RegistroHorasUseCase {
         boolean wasAprobado = Boolean.TRUE.equals(rh.getAprobado());
         rh.setActivo(false);
         rhRepo.guardar(rh);
-        
+
         if (wasAprobado) {
             costoRhRepo.eliminarPorRegistroHoras(id);
             if (rh.getTarea() != null) {
-                List<RegistroHoras> approvedForTask = rhRepo.buscarActivosPorTarea(rh.getTarea().getId()).stream()
-                        .filter(r -> Boolean.TRUE.equals(r.getAprobado()) && !r.getId().equals(rh.getId()))
+                List<RegistroHoras> approvedForTask = rhRepo
+                        .buscarActivosPorTarea(rh.getTarea().getId()).stream()
+                        .filter(r -> Boolean.TRUE.equals(r.getAprobado())
+                                && !r.getId().equals(rh.getId()))
                         .toList();
                 BigDecimal newHorasReales = approvedForTask.stream()
-                        .map(r -> r.getHorasTrabajadas() != null ? r.getHorasTrabajadas() : BigDecimal.ZERO)
+                        .map(r -> r.getHorasTrabajadas() != null ? r.getHorasTrabajadas()
+                                : BigDecimal.ZERO)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 rh.getTarea().setHorasReales(newHorasReales);
                 tareaRepo.guardar(rh.getTarea());
@@ -169,9 +181,9 @@ public class RegistroHorasService implements RegistroHorasUseCase {
 
     @Override
     public com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto obtenerResumen(
-            Long empresaId, Long proyectoId, Long empleadoId, 
+            Long empresaId, Long proyectoId, Long empleadoId,
             java.time.LocalDate fechaInicio, java.time.LocalDate fechaFin) {
-        
+
         List<RegistroHoras> todos = rhRepo.buscarActivosPorEmpresa(empresaId);
 
         List<RegistroHoras> filtrados = todos.stream()
@@ -195,13 +207,16 @@ public class RegistroHorasService implements RegistroHorasUseCase {
         java.util.Map<Proyecto, BigDecimal> porProyecto = filtrados.stream()
                 .collect(Collectors.groupingBy(
                         RegistroHoras::getProyecto,
-                        Collectors.reducing(BigDecimal.ZERO, 
-                                rh -> rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas() : BigDecimal.ZERO, 
-                                BigDecimal::add)
-                ));
+                        Collectors.reducing(BigDecimal.ZERO,
+                                rh -> rh.getHorasTrabajadas() != null
+                                        ? rh.getHorasTrabajadas()
+                                        : BigDecimal.ZERO,
+                                BigDecimal::add)));
 
-        List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorProyectoDto> proyectoDtos = porProyecto.entrySet().stream()
-                .map(entry -> com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorProyectoDto.builder()
+        List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorProyectoDto> proyectoDtos = porProyecto
+                .entrySet().stream()
+                .map(entry -> com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorProyectoDto
+                        .builder()
                         .proyectoId(entry.getKey().getId())
                         .proyectoNombre(entry.getKey().getNombre())
                         .horas(entry.getValue())
@@ -211,15 +226,19 @@ public class RegistroHorasService implements RegistroHorasUseCase {
         java.util.Map<Empleado, BigDecimal> porEmpleado = filtrados.stream()
                 .collect(Collectors.groupingBy(
                         RegistroHoras::getEmpleado,
-                        Collectors.reducing(BigDecimal.ZERO, 
-                                rh -> rh.getHorasTrabajadas() != null ? rh.getHorasTrabajadas() : BigDecimal.ZERO, 
-                                BigDecimal::add)
-                ));
+                        Collectors.reducing(BigDecimal.ZERO,
+                                rh -> rh.getHorasTrabajadas() != null
+                                        ? rh.getHorasTrabajadas()
+                                        : BigDecimal.ZERO,
+                                BigDecimal::add)));
 
-        List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorEmpleadoDto> empleadoDtos = porEmpleado.entrySet().stream()
-                .map(entry -> com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorEmpleadoDto.builder()
+        List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorEmpleadoDto> empleadoDtos = porEmpleado
+                .entrySet().stream()
+                .map(entry -> com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto.HorasPorEmpleadoDto
+                        .builder()
                         .empleadoId(entry.getKey().getId())
-                        .empleadoNombre(entry.getKey().getNombres() + " " + entry.getKey().getApellidos())
+                        .empleadoNombre(entry.getKey().getNombres() + " "
+                                + entry.getKey().getApellidos())
                         .horas(entry.getValue())
                         .build())
                 .collect(Collectors.toList());

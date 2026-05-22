@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Manejador global de excepciones para toda la API.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,13 +27,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException e) {
-        // Determinar status según el tipo de error
+        // captura de error
         int status = 500;
         String message = e.getMessage();
         if (message != null) {
-            if (message.contains("no encontrad")) status = 404;
-            else if (message.contains("No tiene permisos") || message.contains("revocad")) status = 403;
-            else if (message.contains("Ya existe")) status = 409;
+            if (message.contains("No encontrado"))
+                status = 404;
+            else if (message.contains("No tiene permisos") || message.contains("Revocado"))
+                status = 403;
+            else if (message.contains("Ya existe"))
+                status = 409;
         }
         return ResponseEntity.status(status).body(Map.of("error", message != null ? message : "Error interno"));
     }

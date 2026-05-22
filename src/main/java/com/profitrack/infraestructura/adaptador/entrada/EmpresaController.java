@@ -10,10 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Controlador REST para gestión de la empresa.
- * RBAC: Solo Owner puede modificar datos de su empresa.
- */
 @RestController
 @RequestMapping("/api/empresas")
 @RequiredArgsConstructor

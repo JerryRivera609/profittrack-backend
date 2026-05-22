@@ -95,12 +95,18 @@ public class EmpleadoService implements EmpleadoUseCase {
                 .filter(Empleado::getActivo)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + id));
 
-        if (dto.getNombres()       != null) empleado.setNombres(dto.getNombres());
-        if (dto.getApellidos()     != null) empleado.setApellidos(dto.getApellidos());
-        if (dto.getNumeroDocumento() != null) empleado.setNumeroDocumento(dto.getNumeroDocumento());
-        if (dto.getTelefono()      != null) empleado.setTelefono(dto.getTelefono());
-        if (dto.getFechaIngreso()  != null) empleado.setFechaIngreso(dto.getFechaIngreso());
-        if (dto.getFechaSalida()   != null) empleado.setFechaSalida(dto.getFechaSalida());
+        if (dto.getNombres() != null)
+            empleado.setNombres(dto.getNombres());
+        if (dto.getApellidos() != null)
+            empleado.setApellidos(dto.getApellidos());
+        if (dto.getNumeroDocumento() != null)
+            empleado.setNumeroDocumento(dto.getNumeroDocumento());
+        if (dto.getTelefono() != null)
+            empleado.setTelefono(dto.getTelefono());
+        if (dto.getFechaIngreso() != null)
+            empleado.setFechaIngreso(dto.getFechaIngreso());
+        if (dto.getFechaSalida() != null)
+            empleado.setFechaSalida(dto.getFechaSalida());
 
         if (dto.getContrasenia() != null) {
             empleado.setContrasenia(passwordEncoder.encode(dto.getContrasenia()));

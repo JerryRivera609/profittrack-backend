@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestión de empleados (HU-02, HU-03).
- * RBAC: Owner o Administrador para mutaciones.
- */
 @RestController
 @RequestMapping("/api/empleados")
 @RequiredArgsConstructor
@@ -29,7 +25,7 @@ public class EmpleadoController {
     @PostMapping
     public ResponseEntity<EmpleadoResponseDto> crear(@Valid @RequestBody EmpleadoRequestDto dto) {
         securityContext.validarRol(RolConstantes.ADMINISTRADOR, RolConstantes.OWNER);
-        // Forzar empresaId del JWT (aislamiento multi-tenant)
+        // id de empresa sacado del token pa q no intenten ver data de otras empresas
         dto.setEmpresaId(securityContext.getEmpresaId());
         return ResponseEntity.status(HttpStatus.CREATED).body(empleadoUseCase.crear(dto));
     }

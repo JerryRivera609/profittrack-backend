@@ -39,7 +39,8 @@ public class ProyectoEmpleadoService implements ProyectoEmpleadoUseCase {
                 .fechaAsignacion(Instant.now())
                 .activo(true).build());
 
-        // Congelar tarifa vigente en proyecto_costo_empleado
+        // aca congelamos la tarifa pa q si le suben el sueldo dspues no nos arruine el
+        // margen de ese proyecto
         BigDecimal costoHora = historialRepo.buscarVigentePorEmpleado(empleado.getId())
                 .map(HistorialCostoHoraEmpleado::getCostoHora)
                 .orElse(BigDecimal.ZERO);
@@ -57,7 +58,8 @@ public class ProyectoEmpleadoService implements ProyectoEmpleadoUseCase {
                 .map(pe -> {
                     BigDecimal costo = costoRepo.buscarActivoPorProyectoYEmpleado(
                             pe.getProyecto().getId(), pe.getEmpleado().getId())
-                            .map(ProyectoCostoEmpleado::getCostoHora).orElse(BigDecimal.ZERO);
+                            .map(ProyectoCostoEmpleado::getCostoHora)
+                            .orElse(BigDecimal.ZERO);
                     return toDto(pe, costo);
                 }).collect(Collectors.toList());
     }

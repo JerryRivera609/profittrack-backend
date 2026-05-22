@@ -30,7 +30,8 @@ public class ProyectoService implements ProyectoUseCase {
                 .orElseThrow(() -> new RuntimeException("Empresa no encontrada con id: " + dto.getEmpresaId()));
 
         TipoServicio tipo = tipoServicioRepository.buscarPorId(dto.getTipoServicioId())
-                .orElseThrow(() -> new RuntimeException("Tipo de servicio no encontrado con id: " + dto.getTipoServicioId()));
+                .orElseThrow(() -> new RuntimeException(
+                        "Tipo de servicio no encontrado con id: " + dto.getTipoServicioId()));
 
         Cliente cliente = null;
         if (dto.getClienteId() != null) {
@@ -145,18 +146,30 @@ public class ProyectoService implements ProyectoUseCase {
                     .orElseThrow(() -> new RuntimeException("Líder no encontrado"));
             proyecto.setLiderEmpleado(l);
         }
-        if (dto.getCodigo() != null) proyecto.setCodigo(dto.getCodigo());
-        if (dto.getNombre() != null) proyecto.setNombre(dto.getNombre());
-        if (dto.getDescripcion() != null) proyecto.setDescripcion(dto.getDescripcion());
-        if (dto.getFechaInicioPlanificada() != null) proyecto.setFechaInicioPlanificada(dto.getFechaInicioPlanificada());
-        if (dto.getFechaFinPlanificada() != null) proyecto.setFechaFinPlanificada(dto.getFechaFinPlanificada());
-        if (dto.getFechaInicioReal() != null) proyecto.setFechaInicioReal(dto.getFechaInicioReal());
-        if (dto.getFechaFinReal() != null) proyecto.setFechaFinReal(dto.getFechaFinReal());
-        if (dto.getHorasPlanificadas() != null) proyecto.setHorasPlanificadas(dto.getHorasPlanificadas());
-        if (dto.getPresupuestoPlanificado() != null) proyecto.setPresupuestoPlanificado(dto.getPresupuestoPlanificado());
-        if (dto.getMargenPlanificado() != null) proyecto.setMargenPlanificado(dto.getMargenPlanificado());
-        if (dto.getPrecioVenta() != null) proyecto.setPrecioVenta(dto.getPrecioVenta());
-        if (dto.getEstado() != null) proyecto.setEstado(EstadoProyecto.valueOf(dto.getEstado()));
+        if (dto.getCodigo() != null)
+            proyecto.setCodigo(dto.getCodigo());
+        if (dto.getNombre() != null)
+            proyecto.setNombre(dto.getNombre());
+        if (dto.getDescripcion() != null)
+            proyecto.setDescripcion(dto.getDescripcion());
+        if (dto.getFechaInicioPlanificada() != null)
+            proyecto.setFechaInicioPlanificada(dto.getFechaInicioPlanificada());
+        if (dto.getFechaFinPlanificada() != null)
+            proyecto.setFechaFinPlanificada(dto.getFechaFinPlanificada());
+        if (dto.getFechaInicioReal() != null)
+            proyecto.setFechaInicioReal(dto.getFechaInicioReal());
+        if (dto.getFechaFinReal() != null)
+            proyecto.setFechaFinReal(dto.getFechaFinReal());
+        if (dto.getHorasPlanificadas() != null)
+            proyecto.setHorasPlanificadas(dto.getHorasPlanificadas());
+        if (dto.getPresupuestoPlanificado() != null)
+            proyecto.setPresupuestoPlanificado(dto.getPresupuestoPlanificado());
+        if (dto.getMargenPlanificado() != null)
+            proyecto.setMargenPlanificado(dto.getMargenPlanificado());
+        if (dto.getPrecioVenta() != null)
+            proyecto.setPrecioVenta(dto.getPrecioVenta());
+        if (dto.getEstado() != null)
+            proyecto.setEstado(EstadoProyecto.valueOf(dto.getEstado()));
 
         return toDto(proyectoRepository.guardar(proyecto));
     }
@@ -180,8 +193,9 @@ public class ProyectoService implements ProyectoUseCase {
                 .tipoServicioId(p.getTipoServicio().getId())
                 .tipoServicioNombre(p.getTipoServicio().getNombre())
                 .liderEmpleadoId(p.getLiderEmpleado() != null ? p.getLiderEmpleado().getId() : null)
-                .liderNombre(p.getLiderEmpleado() != null ?
-                        p.getLiderEmpleado().getNombres() + " " + p.getLiderEmpleado().getApellidos() : null)
+                .liderNombre(p.getLiderEmpleado() != null
+                        ? p.getLiderEmpleado().getNombres() + " " + p.getLiderEmpleado().getApellidos()
+                        : null)
                 .codigo(p.getCodigo())
                 .nombre(p.getNombre())
                 .descripcion(p.getDescripcion())

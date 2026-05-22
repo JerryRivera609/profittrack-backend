@@ -78,12 +78,18 @@ public class ClienteService implements ClienteUseCase {
                 .filter(Cliente::getActivo)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
 
-        if (dto.getRazonSocial() != null) cliente.setRazonSocial(dto.getRazonSocial());
-        if (dto.getRuc() != null) cliente.setRuc(dto.getRuc());
-        if (dto.getNombreContacto() != null) cliente.setNombreContacto(dto.getNombreContacto());
-        if (dto.getCorreoContacto() != null) cliente.setCorreoContacto(dto.getCorreoContacto());
-        if (dto.getTelefonoContacto() != null) cliente.setTelefonoContacto(dto.getTelefonoContacto());
-        if (dto.getDireccion() != null) cliente.setDireccion(dto.getDireccion());
+        if (dto.getRazonSocial() != null)
+            cliente.setRazonSocial(dto.getRazonSocial());
+        if (dto.getRuc() != null)
+            cliente.setRuc(dto.getRuc());
+        if (dto.getNombreContacto() != null)
+            cliente.setNombreContacto(dto.getNombreContacto());
+        if (dto.getCorreoContacto() != null)
+            cliente.setCorreoContacto(dto.getCorreoContacto());
+        if (dto.getTelefonoContacto() != null)
+            cliente.setTelefonoContacto(dto.getTelefonoContacto());
+        if (dto.getDireccion() != null)
+            cliente.setDireccion(dto.getDireccion());
 
         return toDto(clienteRepository.guardar(cliente));
     }
