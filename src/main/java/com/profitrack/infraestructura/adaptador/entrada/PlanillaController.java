@@ -2,7 +2,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 
 import com.profitrack.aplicacion.dto.planillaDto.PlanillaRequestDto;
 import com.profitrack.aplicacion.dto.planillaDto.PlanillaResponseDto;
-import com.profitrack.dominio.puerto.entrada.PlanillaUseCase;
+import com.profitrack.aplicacion.puerto.entrada.PlanillaUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;

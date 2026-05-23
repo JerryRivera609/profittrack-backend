@@ -1,7 +1,7 @@
 package com.profitrack.infraestructura.adaptador.entrada;
 
 import com.profitrack.aplicacion.dto.tareaProyectoDto.*;
-import com.profitrack.dominio.puerto.entrada.TareaProyectoUseCase;
+import com.profitrack.aplicacion.puerto.entrada.TareaProyectoUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;

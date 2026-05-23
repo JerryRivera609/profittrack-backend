@@ -3,7 +3,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 import com.profitrack.aplicacion.dto.duenioDto.DuenioPatchDto;
 import com.profitrack.aplicacion.dto.duenioDto.DuenioRequestDto;
 import com.profitrack.aplicacion.dto.duenioDto.DuenioResponseDto;
-import com.profitrack.dominio.puerto.entrada.DuenioUseCase;
+import com.profitrack.aplicacion.puerto.entrada.DuenioUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;

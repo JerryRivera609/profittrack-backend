@@ -2,7 +2,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 
 import com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasRequestDto;
 import com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResponseDto;
-import com.profitrack.dominio.puerto.entrada.RegistroHorasUseCase;
+import com.profitrack.aplicacion.puerto.entrada.RegistroHorasUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;

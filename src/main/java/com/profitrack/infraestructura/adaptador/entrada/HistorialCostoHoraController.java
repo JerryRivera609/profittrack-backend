@@ -2,7 +2,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 
 import com.profitrack.aplicacion.dto.historialCostoHoraDto.HistorialCostoHoraRequestDto;
 import com.profitrack.aplicacion.dto.historialCostoHoraDto.HistorialCostoHoraResponseDto;
-import com.profitrack.dominio.puerto.entrada.HistorialCostoHoraUseCase;
+import com.profitrack.aplicacion.puerto.entrada.HistorialCostoHoraUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;

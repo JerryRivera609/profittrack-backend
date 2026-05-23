@@ -2,7 +2,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 
 import com.profitrack.aplicacion.dto.metricaDto.MetricaSnapshotResponseDto;
 import com.profitrack.aplicacion.dto.metricaDto.RentabilidadResponseDto;
-import com.profitrack.dominio.puerto.entrada.MetricaUseCase;
+import com.profitrack.aplicacion.puerto.entrada.MetricaUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import lombok.RequiredArgsConstructor;
