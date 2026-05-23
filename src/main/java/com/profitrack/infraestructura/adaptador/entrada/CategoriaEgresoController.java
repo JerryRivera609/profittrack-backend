@@ -54,7 +54,8 @@ public class CategoriaEgresoController {
         return ResponseEntity.noContent().build();
     }
 
-    @Data @Builder
+    @Data
+    @Builder
     public static class CategoriaEgresoDto {
         private Long id;
         private Long empresaId;

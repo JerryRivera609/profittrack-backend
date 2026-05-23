@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface DuenioJpaRepository extends JpaRepository<Duenio, Long> {
     List<Duenio> findAllByEmpresaIdAndActivoTrue(Long empresaId);
+
     boolean existsByCorreo(String correo);
+
     Optional<Duenio> findByCorreoAndActivoTrue(String correo);
 }

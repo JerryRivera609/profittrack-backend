@@ -19,10 +19,6 @@ import java.time.Instant;
 import java.util.HexFormat;
 import java.util.UUID;
 
-/**
- * Servicio de gestión de tokens JWT y sesiones.
- * Genera access + refresh tokens con claims multi-tenant.
- */
 @Service
 @RequiredArgsConstructor
 public class TokenService {
@@ -42,9 +38,6 @@ public class TokenService {
         String build(Long userId, String sessionId, String userType);
     }
 
-    /**
-     * Crea una sesión para un Empleado autenticado.
-     */
     @Transactional
     public String crearSesionEmpleado(Empleado empleado, String deviceInfo, HttpServletResponse res) {
         String sessionId = UUID.randomUUID().toString();
@@ -67,9 +60,6 @@ public class TokenService {
         return accessToken;
     }
 
-    /**
-     * Crea una sesión para un Dueño autenticado.
-     */
     @Transactional
     public String crearSesionDuenio(Duenio duenio, String deviceInfo, HttpServletResponse res) {
         String sessionId = UUID.randomUUID().toString();
@@ -92,9 +82,6 @@ public class TokenService {
         return accessToken;
     }
 
-    /**
-     * Rota el refresh token (refresh token rotation).
-     */
     @Transactional
     public String rotarSesion(String rawRefresh, HttpServletResponse res,
             TokenBuilder tokenBuilder) {
@@ -130,7 +117,7 @@ public class TokenService {
         return jwtDecoder.decode(token);
     }
 
-    // ── JWT builders ──
+    // jwt builders
 
     public String buildJwtEmpleado(Empleado emp, String sessionId) {
         Instant now = Instant.now();
@@ -166,7 +153,7 @@ public class TokenService {
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }
 
-    // ── Cookies ──
+    // cookies
 
     private void setAccessCookie(HttpServletResponse res, String token) {
         ResponseCookie c = ResponseCookie.from("access_token", token)

@@ -3,7 +3,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 import com.profitrack.aplicacion.dto.tipoServicioDto.TipoServicioPatchDto;
 import com.profitrack.aplicacion.dto.tipoServicioDto.TipoServicioRequestDto;
 import com.profitrack.aplicacion.dto.tipoServicioDto.TipoServicioResponseDto;
-import com.profitrack.dominio.puerto.entrada.TipoServicioUseCase;
+import com.profitrack.aplicacion.puerto.entrada.TipoServicioUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;

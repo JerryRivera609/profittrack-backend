@@ -3,7 +3,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 import com.profitrack.aplicacion.dto.clienteDto.ClientePatchDto;
 import com.profitrack.aplicacion.dto.clienteDto.ClienteRequestDto;
 import com.profitrack.aplicacion.dto.clienteDto.ClienteResponseDto;
-import com.profitrack.dominio.puerto.entrada.ClienteUseCase;
+import com.profitrack.aplicacion.puerto.entrada.ClienteUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;
@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestión de clientes.
- * RBAC: Owner, Administrador o PM pueden gestionar clientes.
- */
 @RestController
 @RequestMapping("/api/clientes")
 @RequiredArgsConstructor

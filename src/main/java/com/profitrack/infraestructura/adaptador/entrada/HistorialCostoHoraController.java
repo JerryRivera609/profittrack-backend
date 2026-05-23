@@ -2,7 +2,7 @@ package com.profitrack.infraestructura.adaptador.entrada;
 
 import com.profitrack.aplicacion.dto.historialCostoHoraDto.HistorialCostoHoraRequestDto;
 import com.profitrack.aplicacion.dto.historialCostoHoraDto.HistorialCostoHoraResponseDto;
-import com.profitrack.dominio.puerto.entrada.HistorialCostoHoraUseCase;
+import com.profitrack.aplicacion.puerto.entrada.HistorialCostoHoraUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
 import jakarta.validation.Valid;
@@ -22,7 +22,8 @@ public class HistorialCostoHoraController {
     private final SecurityContextUtils securityContext;
 
     @PostMapping
-    public ResponseEntity<HistorialCostoHoraResponseDto> registrarCosto(@Valid @RequestBody HistorialCostoHoraRequestDto dto) {
+    public ResponseEntity<HistorialCostoHoraResponseDto> registrarCosto(
+            @Valid @RequestBody HistorialCostoHoraRequestDto dto) {
         securityContext.validarRol(RolConstantes.ADMINISTRADOR, RolConstantes.OWNER, RolConstantes.GERENTE);
         return ResponseEntity.status(HttpStatus.CREATED).body(useCase.registrarCosto(dto));
     }

@@ -35,14 +35,17 @@ public class CostoRegistroHorasController {
         List<ResumenCostoEmpleadoDto> resumen = agrupado.entrySet().stream().map(entry -> {
             CostoRegistroHoras primero = entry.getValue().get(0);
             BigDecimal totalHoras = entry.getValue().stream()
-                    .map(c -> c.getRegistroHoras().getHorasTrabajadas() != null ? c.getRegistroHoras().getHorasTrabajadas() : BigDecimal.ZERO)
+                    .map(c -> c.getRegistroHoras().getHorasTrabajadas() != null
+                            ? c.getRegistroHoras().getHorasTrabajadas()
+                            : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal totalCosto = entry.getValue().stream()
                     .map(c -> c.getCostoTotal() != null ? c.getCostoTotal() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             return ResumenCostoEmpleadoDto.builder()
                     .empleadoId(entry.getKey())
-                    .empleadoNombre(primero.getRegistroHoras().getEmpleado().getNombres() + " " + primero.getRegistroHoras().getEmpleado().getApellidos())
+                    .empleadoNombre(primero.getRegistroHoras().getEmpleado().getNombres() + " "
+                            + primero.getRegistroHoras().getEmpleado().getApellidos())
                     .totalHoras(totalHoras)
                     .totalCosto(totalCosto)
                     .registros(entry.getValue().size())
@@ -52,7 +55,8 @@ public class CostoRegistroHorasController {
         return ResponseEntity.ok(resumen);
     }
 
-    @Data @Builder
+    @Data
+    @Builder
     public static class CostoRegistroDto {
         private Long id;
         private Long registroHorasId;
@@ -66,7 +70,8 @@ public class CostoRegistroHorasController {
         private Instant fechaCalculo;
     }
 
-    @Data @Builder
+    @Data
+    @Builder
     public static class ResumenCostoEmpleadoDto {
         private Long empleadoId;
         private String empleadoNombre;
@@ -80,7 +85,8 @@ public class CostoRegistroHorasController {
                 .id(c.getId())
                 .registroHorasId(c.getRegistroHoras().getId())
                 .empleadoId(c.getRegistroHoras().getEmpleado().getId())
-                .empleadoNombre(c.getRegistroHoras().getEmpleado().getNombres() + " " + c.getRegistroHoras().getEmpleado().getApellidos())
+                .empleadoNombre(c.getRegistroHoras().getEmpleado().getNombres() + " "
+                        + c.getRegistroHoras().getEmpleado().getApellidos())
                 .proyectoId(c.getRegistroHoras().getProyecto().getId())
                 .proyectoNombre(c.getRegistroHoras().getProyecto().getNombre())
                 .costoHora(c.getCostoHora())
