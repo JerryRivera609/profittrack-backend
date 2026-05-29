@@ -1,10 +1,12 @@
 package com.profitrack.aplicacion.dto.proyectoDto;
 
+import com.profitrack.aplicacion.dto.etapaProyectoDto.EtapaProyectoResponseDto;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -39,4 +41,5 @@ public class ProyectoResponseDto {
 
     private String estado;
     private Boolean activo;
+    private List<EtapaProyectoResponseDto> etapas;
 }

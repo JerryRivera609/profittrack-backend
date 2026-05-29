@@ -1,5 +1,7 @@
 package com.profitrack.aplicacion.service;
 
+import com.profitrack.aplicacion.dto.etapaProyectoDto.EtapaProyectoRequestDto;
+import com.profitrack.aplicacion.dto.etapaProyectoDto.EtapaProyectoResponseDto;
 import com.profitrack.aplicacion.dto.proyectoDto.ProyectoPatchDto;
 import com.profitrack.aplicacion.dto.proyectoDto.ProyectoRequestDto;
 import com.profitrack.aplicacion.dto.proyectoDto.ProyectoResponseDto;
@@ -9,6 +11,7 @@ import com.profitrack.dominio.puerto.salida.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,8 @@ public class ProyectoService implements ProyectoUseCase {
     private final TipoServicioRepository tipoServicioRepository;
     private final EmpleadoRepository empleadoRepository;
     private final ProyectoEmpleadoRepository proyectoEmpleadoRepository;
+    private final EtapaProyectoRepository etapaProyectoRepository;
+    private final TareaProyectoRepository tareaProyectoRepository;
 
     @Override
     public ProyectoResponseDto crear(ProyectoRequestDto dto) {
@@ -45,6 +50,8 @@ public class ProyectoService implements ProyectoUseCase {
                     .orElseThrow(() -> new RuntimeException("Líder no encontrado con id: " + dto.getLiderEmpleadoId()));
         }
 
+        BigDecimal horasPlanificadas = resolverHorasPlanificadas(dto.getHorasPlanificadas(), dto.getEtapas());
+
         Proyecto proyecto = Proyecto.builder()
                 .empresa(empresa)
                 .cliente(cliente)
@@ -55,14 +62,17 @@ public class ProyectoService implements ProyectoUseCase {
                 .descripcion(dto.getDescripcion())
                 .fechaInicioPlanificada(dto.getFechaInicioPlanificada())
                 .fechaFinPlanificada(dto.getFechaFinPlanificada())
-                .horasPlanificadas(dto.getHorasPlanificadas())
+                .horasPlanificadas(horasPlanificadas)
                 .presupuestoPlanificado(dto.getPresupuestoPlanificado())
                 .margenPlanificado(dto.getMargenPlanificado())
                 .precioVenta(dto.getPrecioVenta())
                 .estado(EstadoProyecto.PLANIFICADO)
                 .build();
 
-        return toDto(proyectoRepository.guardar(proyecto));
+        proyecto = proyectoRepository.guardar(proyecto);
+        guardarEtapasIniciales(proyecto, dto.getEtapas());
+
+        return toDto(proyecto);
     }
 
     @Override
@@ -160,16 +170,23 @@ public class ProyectoService implements ProyectoUseCase {
             proyecto.setFechaInicioReal(dto.getFechaInicioReal());
         if (dto.getFechaFinReal() != null)
             proyecto.setFechaFinReal(dto.getFechaFinReal());
-        if (dto.getHorasPlanificadas() != null)
+        if (dto.getHorasPlanificadas() != null) {
+            validarHorasProyectoContraEtapas(proyecto.getId(), dto.getHorasPlanificadas());
             proyecto.setHorasPlanificadas(dto.getHorasPlanificadas());
+        }
         if (dto.getPresupuestoPlanificado() != null)
             proyecto.setPresupuestoPlanificado(dto.getPresupuestoPlanificado());
         if (dto.getMargenPlanificado() != null)
             proyecto.setMargenPlanificado(dto.getMargenPlanificado());
         if (dto.getPrecioVenta() != null)
             proyecto.setPrecioVenta(dto.getPrecioVenta());
-        if (dto.getEstado() != null)
-            proyecto.setEstado(EstadoProyecto.valueOf(dto.getEstado()));
+        if (dto.getEstado() != null) {
+            EstadoProyecto nuevoEstado = EstadoProyecto.valueOf(dto.getEstado());
+            if (EstadoProyecto.FINALIZADO.equals(nuevoEstado)) {
+                validarEtapasFinalizadas(proyecto.getId());
+            }
+            proyecto.setEstado(nuevoEstado);
+        }
 
         return toDto(proyectoRepository.guardar(proyecto));
     }
@@ -212,6 +229,120 @@ public class ProyectoService implements ProyectoUseCase {
                 .precioVenta(p.getPrecioVenta())
                 .estado(p.getEstado() != null ? p.getEstado().name() : null)
                 .activo(p.getActivo())
+                .etapas(mapearEtapas(p.getId()))
                 .build();
+    }
+
+    private BigDecimal resolverHorasPlanificadas(BigDecimal horasProyecto, List<EtapaProyectoRequestDto> etapas) {
+        if (etapas == null || etapas.isEmpty()) {
+            return horasProyecto;
+        }
+
+        BigDecimal totalEtapas = etapas.stream()
+                .map(e -> safeValue(e.getHorasPlanificadas()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (horasProyecto != null && totalEtapas.compareTo(horasProyecto) != 0) {
+            throw new RuntimeException("Las horas planificadas del proyecto deben coincidir con la suma de horas de sus etapas");
+        }
+
+        return totalEtapas;
+    }
+
+    private void guardarEtapasIniciales(Proyecto proyecto, List<EtapaProyectoRequestDto> etapas) {
+        if (etapas == null || etapas.isEmpty()) {
+            return;
+        }
+
+        int orden = 1;
+        for (EtapaProyectoRequestDto etapaDto : etapas) {
+            etapaProyectoRepository.guardar(EtapaProyecto.builder()
+                    .proyecto(proyecto)
+                    .nombre(etapaDto.getNombre())
+                    .descripcion(etapaDto.getDescripcion())
+                    .orden(etapaDto.getOrden() != null ? etapaDto.getOrden() : orden)
+                    .horasPlanificadas(etapaDto.getHorasPlanificadas())
+                    .horasReales(BigDecimal.ZERO)
+                    .fechaInicioPlanificada(etapaDto.getFechaInicioPlanificada())
+                    .fechaFinPlanificada(etapaDto.getFechaFinPlanificada())
+                    .estado(EstadoEtapa.PENDIENTE)
+                    .build());
+            orden++;
+        }
+    }
+
+    private List<EtapaProyectoResponseDto> mapearEtapas(Long proyectoId) {
+        if (proyectoId == null) {
+            return List.of();
+        }
+        return etapaProyectoRepository.buscarActivasPorProyecto(proyectoId).stream()
+                .map(this::toEtapaDto)
+                .collect(Collectors.toList());
+    }
+
+    private EtapaProyectoResponseDto toEtapaDto(EtapaProyecto etapa) {
+        List<TareaProyecto> tareas = etapa.getId() != null
+                ? tareaProyectoRepository.buscarActivasPorEtapa(etapa.getId())
+                : List.of();
+
+        BigDecimal horasTareasPlanificadas = tareas.stream()
+                .map(t -> safeValue(t.getHorasPlanificadas()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal horasReales = tareas.stream()
+                .map(t -> safeValue(t.getHorasReales()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return EtapaProyectoResponseDto.builder()
+                .id(etapa.getId())
+                .empresaId(etapa.getProyecto().getEmpresa().getId())
+                .proyectoId(etapa.getProyecto().getId())
+                .proyectoNombre(etapa.getProyecto().getNombre())
+                .nombre(etapa.getNombre())
+                .descripcion(etapa.getDescripcion())
+                .orden(etapa.getOrden())
+                .horasPlanificadas(etapa.getHorasPlanificadas())
+                .horasTareasPlanificadas(horasTareasPlanificadas)
+                .horasReales(horasReales)
+                .fechaInicioPlanificada(etapa.getFechaInicioPlanificada())
+                .fechaFinPlanificada(etapa.getFechaFinPlanificada())
+                .fechaInicioReal(etapa.getFechaInicioReal())
+                .fechaFinReal(etapa.getFechaFinReal())
+                .estado(etapa.getEstado() != null ? etapa.getEstado().name() : null)
+                .activo(etapa.getActivo())
+                .build();
+    }
+
+    private BigDecimal safeValue(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private void validarHorasProyectoContraEtapas(Long proyectoId, BigDecimal horasPlanificadas) {
+        List<EtapaProyecto> etapas = etapaProyectoRepository.buscarActivasPorProyecto(proyectoId);
+        if (etapas.isEmpty()) {
+            return;
+        }
+
+        BigDecimal totalEtapas = etapas.stream()
+                .map(e -> safeValue(e.getHorasPlanificadas()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (totalEtapas.compareTo(horasPlanificadas) != 0) {
+            throw new RuntimeException("Para cambiar las horas del proyecto, actualice las horas de sus etapas");
+        }
+    }
+
+    private void validarEtapasFinalizadas(Long proyectoId) {
+        List<EtapaProyecto> etapas = etapaProyectoRepository.buscarActivasPorProyecto(proyectoId);
+        if (etapas.isEmpty()) {
+            return;
+        }
+
+        boolean tieneEtapasPendientes = etapas.stream()
+                .anyMatch(e -> !EstadoEtapa.FINALIZADA.equals(e.getEstado()));
+
+        if (tieneEtapasPendientes) {
+            throw new RuntimeException("No se puede finalizar el proyecto porque tiene etapas pendientes o en curso");
+        }
     }
 }
