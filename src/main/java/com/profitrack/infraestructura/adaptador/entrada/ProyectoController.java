@@ -3,6 +3,8 @@ package com.profitrack.infraestructura.adaptador.entrada;
 import com.profitrack.aplicacion.dto.proyectoDto.ProyectoPatchDto;
 import com.profitrack.aplicacion.dto.proyectoDto.ProyectoRequestDto;
 import com.profitrack.aplicacion.dto.proyectoDto.ProyectoResponseDto;
+import com.profitrack.aplicacion.dto.ownerDashboardDto.OwnerDashboardResponseDto;
+import com.profitrack.aplicacion.puerto.entrada.OwnerDashboardUseCase;
 import com.profitrack.aplicacion.puerto.entrada.ProyectoUseCase;
 import com.profitrack.infraestructura.seguridad.RolConstantes;
 import com.profitrack.infraestructura.seguridad.SecurityContextUtils;
@@ -20,6 +22,7 @@ import java.util.List;
 public class ProyectoController {
 
     private final ProyectoUseCase proyectoUseCase;
+    private final OwnerDashboardUseCase ownerDashboardUseCase;
     private final SecurityContextUtils securityContext;
 
     @PostMapping
@@ -31,7 +34,21 @@ public class ProyectoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProyectoResponseDto> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(proyectoUseCase.obtenerPorId(id));
+        securityContext.validarAccesoProyecto(id);
+        return ResponseEntity.ok(proyectoUseCase.obtenerPorIdParaUsuario(
+                id,
+                empleadoIdParaContexto(),
+                rolGlobalParaContexto()));
+    }
+
+    @GetMapping("/{id}/dashboard-owner")
+    public ResponseEntity<OwnerDashboardResponseDto> dashboardOwner(@PathVariable Long id) {
+        securityContext.validarRolOProyectoLider(id, RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
+        return ResponseEntity.ok(ownerDashboardUseCase.obtenerPorProyecto(
+                id,
+                securityContext.getEmpresaId(),
+                empleadoIdParaContexto(),
+                rolGlobalParaContexto()));
     }
 
     @GetMapping
@@ -47,7 +64,10 @@ public class ProyectoController {
                 RolConstantes.ADMINISTRADOR.equalsIgnoreCase(rol);
 
         if (esAdmin) {
-            return ResponseEntity.ok(proyectoUseCase.listarActivosPorEmpresa(empresaId));
+            return ResponseEntity.ok(proyectoUseCase.listarActivosPorEmpresaParaUsuario(
+                    empresaId,
+                    empleadoIdParaContexto(),
+                    rolGlobalParaContexto()));
         } else {
             Long empleadoId = securityContext.getUserId();
             return ResponseEntity.ok(proyectoUseCase.listarProyectosAsignados(empleadoId, empresaId));
@@ -65,7 +85,10 @@ public class ProyectoController {
     public ResponseEntity<List<ProyectoResponseDto>> listarInactivosPorEmpresa() {
         securityContext.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
         Long empresaId = securityContext.getEmpresaId();
-        return ResponseEntity.ok(proyectoUseCase.listarInactivosPorEmpresa(empresaId));
+        return ResponseEntity.ok(proyectoUseCase.listarInactivosPorEmpresaParaUsuario(
+                empresaId,
+                empleadoIdParaContexto(),
+                rolGlobalParaContexto()));
     }
 
     @PatchMapping("/{id}/reactivar")
@@ -87,5 +110,22 @@ public class ProyectoController {
         securityContext.validarRol(RolConstantes.PM, RolConstantes.GERENTE, RolConstantes.OWNER);
         proyectoUseCase.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Long empleadoIdParaContexto() {
+        return "empleado".equalsIgnoreCase(securityContext.getTipo()) ? securityContext.getUserId() : null;
+    }
+
+    private String rolGlobalParaContexto() {
+        return esAdminProyecto() ? securityContext.getRolNombre() : null;
+    }
+
+    private boolean esAdminProyecto() {
+        return "duenio".equalsIgnoreCase(securityContext.getTipo()) ||
+                securityContext.tieneRol(
+                        RolConstantes.OWNER,
+                        RolConstantes.GERENTE,
+                        RolConstantes.PM,
+                        RolConstantes.ADMINISTRADOR);
     }
 }

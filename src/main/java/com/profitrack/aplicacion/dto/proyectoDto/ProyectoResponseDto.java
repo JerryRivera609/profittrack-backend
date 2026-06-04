@@ -42,4 +42,8 @@ public class ProyectoResponseDto {
     private String estado;
     private Boolean activo;
     private List<EtapaProyectoResponseDto> etapas;
+
+    private String miRolEnProyecto;
+    private Boolean soyLiderDelProyecto;
+    private List<String> misPermisos;
 }
