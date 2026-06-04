@@ -7,4 +7,5 @@ public interface ProyectoEmpleadoRepository {
     Optional<ProyectoEmpleado> buscarPorId(Long id);
     List<ProyectoEmpleado> buscarActivosPorProyecto(Long proyectoId);
     List<ProyectoEmpleado> buscarActivosPorEmpleado(Long empleadoId);
+    Optional<ProyectoEmpleado> buscarActivoPorProyectoYEmpleado(Long proyectoId, Long empleadoId);
 }
