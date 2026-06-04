@@ -5,6 +5,7 @@ import com.profitrack.dominio.puerto.salida.ProyectoCostoEmpleadoRepository;
 import com.profitrack.infraestructura.repository.ProyectoCostoEmpleadoJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -20,5 +21,10 @@ public class ProyectoCostoEmpleadoRepositoryAdapter implements ProyectoCostoEmpl
     @Override
     public Optional<ProyectoCostoEmpleado> buscarActivoPorProyectoYEmpleado(Long proyectoId, Long empleadoId) {
         return jpa.findByProyectoIdAndEmpleadoIdAndFechaFinIsNull(proyectoId, empleadoId);
+    }
+
+    @Override
+    public List<ProyectoCostoEmpleado> listarPorProyecto(Long proyectoId) {
+        return jpa.findAllByProyectoIdOrderByFechaInicioDesc(proyectoId);
     }
 }
