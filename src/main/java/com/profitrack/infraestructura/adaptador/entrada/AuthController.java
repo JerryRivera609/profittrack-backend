@@ -60,6 +60,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Login exitoso",
                     "tipo", "empleado",
+                    "userId", emp.getId(),
                     "nombre", emp.getNombres() + " " + emp.getApellidos(),
                     "rol", emp.getRol() != null ? emp.getRol().getNombre() : "SIN_ROL",
                     "empresaId", emp.getEmpresa().getId()));
@@ -72,6 +73,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Login exitoso",
                     "tipo", "duenio",
+                    "userId", duenio.getId(),
                     "nombre", duenio.getNombres() + " " + duenio.getApellidos(),
                     "rol", "owner",
                     "empresaId", duenio.getEmpresa().getId()));

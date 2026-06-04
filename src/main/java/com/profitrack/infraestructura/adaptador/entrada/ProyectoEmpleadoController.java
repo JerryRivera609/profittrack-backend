@@ -27,6 +27,7 @@ public class ProyectoEmpleadoController {
 
     @GetMapping("/proyecto/{proyectoId}")
     public ResponseEntity<List<ProyectoEmpleadoResponseDto>> listar(@PathVariable Long proyectoId) {
+        securityContext.validarAccesoProyecto(proyectoId);
         return ResponseEntity.ok(useCase.listarPorProyecto(proyectoId));
     }
 

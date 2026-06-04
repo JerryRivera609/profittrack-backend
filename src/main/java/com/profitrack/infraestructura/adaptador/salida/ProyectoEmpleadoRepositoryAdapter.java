@@ -32,4 +32,9 @@ public class ProyectoEmpleadoRepositoryAdapter implements ProyectoEmpleadoReposi
     public List<ProyectoEmpleado> buscarActivosPorEmpleado(Long empleadoId) {
         return jpa.findAllByEmpleadoIdAndActivoTrue(empleadoId);
     }
+
+    @Override
+    public Optional<ProyectoEmpleado> buscarActivoPorProyectoYEmpleado(Long proyectoId, Long empleadoId) {
+        return jpa.findByProyectoIdAndEmpleadoIdAndActivoTrue(proyectoId, empleadoId);
+    }
 }

@@ -12,12 +12,40 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProyectoService implements ProyectoUseCase {
+
+    private static final String ROL_LIDER = "LIDER";
+    private static final String ROL_MIEMBRO = "MIEMBRO";
+    private static final List<String> PERMISOS_ADMIN = List.of(
+            "VER_PROYECTO",
+            "CREAR_PROYECTO",
+            "ACTUALIZAR_PROYECTO",
+            "ELIMINAR_PROYECTO",
+            "GESTIONAR_ETAPAS",
+            "GESTIONAR_TAREAS",
+            "GESTIONAR_EQUIPO",
+            "APROBAR_HORAS",
+            "VER_METRICAS",
+            "GENERAR_SNAPSHOT");
+    private static final List<String> PERMISOS_LIDER = List.of(
+            "VER_PROYECTO",
+            "GESTIONAR_ETAPAS",
+            "GESTIONAR_TAREAS",
+            "APROBAR_HORAS",
+            "VER_METRICAS",
+            "GENERAR_SNAPSHOT");
+    private static final List<String> PERMISOS_MIEMBRO = List.of(
+            "VER_PROYECTO",
+            "VER_TAREAS",
+            "REGISTRAR_HORAS");
 
     private final ProyectoRepository proyectoRepository;
     private final EmpresaRepository empresaRepository;
@@ -84,6 +112,14 @@ public class ProyectoService implements ProyectoUseCase {
     }
 
     @Override
+    public ProyectoResponseDto obtenerPorIdParaUsuario(Long id, Long empleadoId, String rolGlobal) {
+        return proyectoRepository.buscarPorId(id)
+                .filter(Proyecto::getActivo)
+                .map(p -> toDto(p, empleadoId, rolGlobal))
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado con id: " + id));
+    }
+
+    @Override
     public List<ProyectoResponseDto> listarActivosPorEmpresa(Long empresaId) {
         return proyectoRepository.buscarActivosPorEmpresa(empresaId)
                 .stream()
@@ -92,10 +128,26 @@ public class ProyectoService implements ProyectoUseCase {
     }
 
     @Override
+    public List<ProyectoResponseDto> listarActivosPorEmpresaParaUsuario(Long empresaId, Long empleadoId, String rolGlobal) {
+        return proyectoRepository.buscarActivosPorEmpresa(empresaId)
+                .stream()
+                .map(p -> toDto(p, empleadoId, rolGlobal))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<ProyectoResponseDto> listarInactivosPorEmpresa(Long empresaId) {
         return proyectoRepository.buscarInactivosPorEmpresa(empresaId)
                 .stream()
                 .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProyectoResponseDto> listarInactivosPorEmpresaParaUsuario(Long empresaId, Long empleadoId, String rolGlobal) {
+        return proyectoRepository.buscarInactivosPorEmpresa(empresaId)
+                .stream()
+                .map(p -> toDto(p, empleadoId, rolGlobal))
                 .collect(Collectors.toList());
     }
 
@@ -124,7 +176,7 @@ public class ProyectoService implements ProyectoUseCase {
             }
         }
 
-        return todos.stream().map(this::toDto).collect(Collectors.toList());
+        return todos.stream().map(p -> toDto(p, empleadoId, null)).collect(Collectors.toList());
     }
 
     @Override
@@ -202,6 +254,12 @@ public class ProyectoService implements ProyectoUseCase {
     }
 
     private ProyectoResponseDto toDto(Proyecto p) {
+        return toDto(p, null, null);
+    }
+
+    private ProyectoResponseDto toDto(Proyecto p, Long empleadoId, String rolGlobal) {
+        ContextoProyecto contexto = resolverContextoProyecto(p, empleadoId, rolGlobal);
+
         return ProyectoResponseDto.builder()
                 .id(p.getId())
                 .empresaId(p.getEmpresa().getId())
@@ -230,7 +288,60 @@ public class ProyectoService implements ProyectoUseCase {
                 .estado(p.getEstado() != null ? p.getEstado().name() : null)
                 .activo(p.getActivo())
                 .etapas(mapearEtapas(p.getId()))
+                .miRolEnProyecto(contexto.rol())
+                .soyLiderDelProyecto(contexto.esLider())
+                .misPermisos(contexto.permisos())
                 .build();
+    }
+
+    private ContextoProyecto resolverContextoProyecto(Proyecto proyecto, Long empleadoId, String rolGlobal) {
+        if (rolGlobal != null && !rolGlobal.isBlank()) {
+            boolean esLider = empleadoId != null && esLiderDelProyecto(proyecto, empleadoId);
+            return new ContextoProyecto(rolGlobal, esLider, PERMISOS_ADMIN);
+        }
+
+        if (empleadoId == null) {
+            return new ContextoProyecto(null, false, List.of());
+        }
+
+        Optional<ProyectoEmpleado> asignacion = buscarAsignacionActiva(empleadoId, proyecto.getId());
+        boolean esLider = esLiderDelProyecto(proyecto, empleadoId)
+                || asignacion.map(ProyectoEmpleado::getRolAsignado).map(this::esRolLider).orElse(false);
+
+        if (esLider) {
+            return new ContextoProyecto(ROL_LIDER, true, PERMISOS_LIDER);
+        }
+
+        if (asignacion.isPresent()) {
+            String rolAsignado = asignacion.get().getRolAsignado();
+            String rol = rolAsignado != null && !rolAsignado.isBlank() ? rolAsignado : ROL_MIEMBRO;
+            return new ContextoProyecto(rol, false, PERMISOS_MIEMBRO);
+        }
+
+        return new ContextoProyecto(null, false, List.of());
+    }
+
+    private Optional<ProyectoEmpleado> buscarAsignacionActiva(Long empleadoId, Long proyectoId) {
+        return proyectoEmpleadoRepository.buscarActivoPorProyectoYEmpleado(proyectoId, empleadoId);
+    }
+
+    private boolean esLiderDelProyecto(Proyecto proyecto, Long empleadoId) {
+        return proyecto.getLiderEmpleado() != null
+                && proyecto.getLiderEmpleado().getId().equals(empleadoId);
+    }
+
+    private boolean esRolLider(String rolAsignado) {
+        if (rolAsignado == null) {
+            return false;
+        }
+        String normalizado = Normalizer.normalize(rolAsignado, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .trim()
+                .toUpperCase();
+        return ROL_LIDER.equals(normalizado) || "LEADER".equals(normalizado);
+    }
+
+    private record ContextoProyecto(String rol, boolean esLider, List<String> permisos) {
     }
 
     private BigDecimal resolverHorasPlanificadas(BigDecimal horasProyecto, List<EtapaProyectoRequestDto> etapas) {
@@ -275,8 +386,10 @@ public class ProyectoService implements ProyectoUseCase {
         if (proyectoId == null) {
             return List.of();
         }
-        return etapaProyectoRepository.buscarActivasPorProyecto(proyectoId).stream()
-                .map(this::toEtapaDto)
+        List<EtapaProyecto> etapas = etapaProyectoRepository.buscarActivasPorProyecto(proyectoId);
+        Map<Long, List<TareaProyecto>> tareasPorEtapa = buscarTareasPorEtapa(etapas);
+        return etapas.stream()
+                .map(etapa -> toEtapaDto(etapa, tareasPorEtapa.getOrDefault(etapa.getId(), List.of())))
                 .collect(Collectors.toList());
     }
 
@@ -284,7 +397,10 @@ public class ProyectoService implements ProyectoUseCase {
         List<TareaProyecto> tareas = etapa.getId() != null
                 ? tareaProyectoRepository.buscarActivasPorEtapa(etapa.getId())
                 : List.of();
+        return toEtapaDto(etapa, tareas);
+    }
 
+    private EtapaProyectoResponseDto toEtapaDto(EtapaProyecto etapa, List<TareaProyecto> tareas) {
         BigDecimal horasTareasPlanificadas = tareas.stream()
                 .map(t -> safeValue(t.getHorasPlanificadas()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -311,6 +427,14 @@ public class ProyectoService implements ProyectoUseCase {
                 .estado(etapa.getEstado() != null ? etapa.getEstado().name() : null)
                 .activo(etapa.getActivo())
                 .build();
+    }
+
+    private Map<Long, List<TareaProyecto>> buscarTareasPorEtapa(List<EtapaProyecto> etapas) {
+        List<Long> etapaIds = etapas.stream()
+                .map(EtapaProyecto::getId)
+                .toList();
+        return tareaProyectoRepository.buscarActivasPorEtapas(etapaIds).stream()
+                .collect(Collectors.groupingBy(t -> t.getEtapaProyecto().getId()));
     }
 
     private BigDecimal safeValue(BigDecimal value) {
