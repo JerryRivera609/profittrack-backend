@@ -1,21 +1,23 @@
-package com.profitrack.aplicacion.dto.tareaProyectoDto;
+package com.profitrack.aplicacion.dto.etapaProyectoDto;
+
 import lombok.Builder;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
-@Data @Builder
-public class TareaProyectoResponseDto {
+
+@Data
+@Builder
+public class EtapaProyectoResponseDto {
     private Long id;
+    private Long empresaId;
     private Long proyectoId;
-    private Long etapaProyectoId;
-    private String etapaProyectoNombre;
-    private Long tipoTareaId;
-    private String tipoTareaNombre;
-    private Long empleadoAsignadoId;
-    private String empleadoNombre;
+    private String proyectoNombre;
     private String nombre;
     private String descripcion;
+    private Integer orden;
     private BigDecimal horasPlanificadas;
+    private BigDecimal horasTareasPlanificadas;
     private BigDecimal horasReales;
     private LocalDate fechaInicioPlanificada;
     private LocalDate fechaFinPlanificada;

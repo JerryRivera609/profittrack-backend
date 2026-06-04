@@ -18,35 +18,26 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "tareas_proyecto")
+@Table(name = "etapas_proyecto")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TareaProyecto extends BaseEntity {
+public class EtapaProyecto extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "proyecto_id", nullable = false)
     private Proyecto proyecto;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tipo_tarea_id")
-    private TipoTarea tipoTarea;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "etapa_proyecto_id")
-    private EtapaProyecto etapaProyecto;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "empleado_asignado_id")
-    private Empleado empleadoAsignado;
-
-    @Column(length = 200)
+    @Column(nullable = false, length = 160)
     private String nombre;
 
     @Column(columnDefinition = "text")
     private String descripcion;
+
+    @Column(nullable = false)
+    private Integer orden;
 
     @Column(name = "horas_planificadas", precision = 10, scale = 2)
     private BigDecimal horasPlanificadas;
@@ -68,5 +59,5 @@ public class TareaProyecto extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private EstadoTarea estado;
+    private EstadoEtapa estado;
 }
