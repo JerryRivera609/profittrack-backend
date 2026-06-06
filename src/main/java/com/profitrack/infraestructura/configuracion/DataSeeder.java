@@ -50,7 +50,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -121,9 +120,11 @@ public class DataSeeder implements CommandLineRunner {
                 obtenerOCrearTipoServicio(empresa, "Consultoria TI", "Asesoria en tecnologia de la informacion");
 
                 TipoTarea backendTipo = obtenerOCrearTipoTarea(empresa, "Backend", "Servicios, API y base de datos");
-                TipoTarea frontendTipo = obtenerOCrearTipoTarea(empresa, "Frontend", "Interfaz y experiencia de usuario");
+                TipoTarea frontendTipo = obtenerOCrearTipoTarea(empresa, "Frontend",
+                                "Interfaz y experiencia de usuario");
                 TipoTarea qaTipo = obtenerOCrearTipoTarea(empresa, "QA", "Pruebas funcionales y despliegue");
-                TipoTarea gestionTipo = obtenerOCrearTipoTarea(empresa, "Gestion", "Analisis, coordinacion y seguimiento");
+                TipoTarea gestionTipo = obtenerOCrearTipoTarea(empresa, "Gestion",
+                                "Analisis, coordinacion y seguimiento");
 
                 CategoriaEgreso infraestructura = obtenerOCrearCategoria(empresa, "Infraestructura");
                 CategoriaEgreso licencias = obtenerOCrearCategoria(empresa, "Licencias");
