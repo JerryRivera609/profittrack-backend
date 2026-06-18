@@ -8,6 +8,7 @@ import com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResumenDto;
 import com.profitrack.aplicacion.puerto.entrada.*;
 import com.profitrack.dominio.model.CostoRegistroHoras;
 import com.profitrack.dominio.model.Empleado;
+import com.profitrack.dominio.model.EstadoAprobacion;
 import com.profitrack.dominio.model.RegistroHoras;
 import com.profitrack.dominio.puerto.salida.CostoRegistroHorasRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,6 +67,7 @@ class OwnerDashboardServiceTest {
                                 .costoReal(new BigDecimal("1000.00"))
                                 .costoPlanificado(new BigDecimal("2000.00"))
                                 .horasReales(new BigDecimal("40.0"))
+                                .horasInvertidas(new BigDecimal("40.0"))
                                 .horasPlanificadas(new BigDecimal("50.0"))
                                 .ingresoReal(new BigDecimal("6000.00"))
                                 .build();
@@ -74,11 +76,16 @@ class OwnerDashboardServiceTest {
                                 .totalHorasPendientes(BigDecimal.ZERO)
                                 .build();
 
-                Empleado emp = Empleado.builder().nombres("Juan").build();
+                Empleado emp = Empleado.builder().nombres("Juan").apellidos("Perez").build();
                 emp.setId(1L);
-                RegistroHoras rh = RegistroHoras.builder().empleado(emp).horasTrabajadas(new BigDecimal("10")).build();
+                RegistroHoras rh = RegistroHoras.builder()
+                                .empleado(emp)
+                                .horasTrabajadas(new BigDecimal("10"))
+                                .estadoAprobacion(EstadoAprobacion.APROBADO)
+                                .build();
                 CostoRegistroHoras costo1 = CostoRegistroHoras.builder()
                                 .registroHoras(rh)
+                                .costoHora(new BigDecimal("10.00"))
                                 .costoTotal(new BigDecimal("100.00"))
                                 .build();
 
@@ -91,6 +98,10 @@ class OwnerDashboardServiceTest {
                 when(registroHorasUseCase.obtenerResumen(10L, 100L, null)).thenReturn(resumenHoras);
                 when(costoRegistroRepo.buscarPorProyecto(100L)).thenReturn(List.of(costo1));
                 when(proyectoEmpleadoUseCase.listarPorProyecto(100L)).thenReturn(List.of(equipo1));
+                when(proyectoCostoEmpleadoUseCase.listarPorProyecto(100L)).thenReturn(List.of());
+                when(ingresoUseCase.listarPorProyecto(100L)).thenReturn(List.of());
+                when(egresoUseCase.listarPorProyecto(100L)).thenReturn(List.of());
+                when(metricaUseCase.listarPorProyecto(100L)).thenReturn(List.of());
 
                 OwnerDashboardResponseDto resultado = ownerDashboardService.obtenerPorProyecto(100L, 10L, 1L, "ADMIN");
 
@@ -115,6 +126,7 @@ class OwnerDashboardServiceTest {
                                 .costoReal(new BigDecimal("3000.00"))
                                 .costoPlanificado(new BigDecimal("2000.00"))
                                 .horasReales(new BigDecimal("60.0"))
+                                .horasInvertidas(new BigDecimal("60.0"))
                                 .horasPlanificadas(new BigDecimal("50.0"))
                                 .ingresoReal(BigDecimal.ZERO)
                                 .build();
@@ -132,6 +144,10 @@ class OwnerDashboardServiceTest {
                 when(registroHorasUseCase.obtenerResumen(10L, 100L, null)).thenReturn(resumenHoras);
                 when(costoRegistroRepo.buscarPorProyecto(100L)).thenReturn(List.of());
                 when(proyectoEmpleadoUseCase.listarPorProyecto(100L)).thenReturn(List.of(equipo1));
+                when(proyectoCostoEmpleadoUseCase.listarPorProyecto(100L)).thenReturn(List.of());
+                when(ingresoUseCase.listarPorProyecto(100L)).thenReturn(List.of());
+                when(egresoUseCase.listarPorProyecto(100L)).thenReturn(List.of());
+                when(metricaUseCase.listarPorProyecto(100L)).thenReturn(List.of());
 
                 OwnerDashboardResponseDto resultado = ownerDashboardService.obtenerPorProyecto(100L, 10L, 1L, "ADMIN");
 
