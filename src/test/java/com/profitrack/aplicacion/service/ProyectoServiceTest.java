@@ -409,4 +409,48 @@ class ProyectoServiceTest {
             assertThat(resultado.getActivo()).isTrue();
         }
     }
+
+    // ────────────────────────────────────────────
+    // ACTUALIZAR PROYECTO
+    // ────────────────────────────────────────────
+    @Nested
+    @DisplayName("Actualizar proyecto")
+    class ActualizarProyecto {
+        @Test
+        @DisplayName("Debe actualizar un proyecto existente")
+        void actualizar_exito() {
+            Proyecto p = Proyecto.builder()
+                    .empresa(empresa).tipoServicio(tipoServicio)
+                    .nombre("Original").estado(EstadoProyecto.PLANIFICADO).build();
+            p.setId(1L);
+            p.setActivo(true);
+            
+            when(proyectoRepository.buscarPorId(1L)).thenReturn(Optional.of(p));
+            when(proyectoRepository.guardar(any(Proyecto.class))).thenReturn(p);
+            
+            com.profitrack.aplicacion.dto.proyectoDto.ProyectoPatchDto dto = new com.profitrack.aplicacion.dto.proyectoDto.ProyectoPatchDto();
+            dto.setNombre("Actualizado");
+            
+            ProyectoResponseDto res = proyectoService.actualizar(1L, dto);
+            assertThat(res.getNombre()).isEqualTo("Actualizado");
+        }
+    }
+
+    @Nested
+    @DisplayName("Listar asignados y obtener para usuario")
+    class AsignadosYUsuario {
+        @Test
+        void listarProyectosAsignados_exito() {
+            Proyecto p = Proyecto.builder().empresa(empresa).liderEmpleado(lider).tipoServicio(tipoServicio).nombre("P1").estado(EstadoProyecto.EN_PROCESO).build();
+            p.setId(10L);
+            when(proyectoRepository.buscarActivosPorEmpresa(1L)).thenReturn(List.of(p));
+            ProyectoEmpleado pe = new ProyectoEmpleado();
+            pe.setProyecto(p);
+            when(proyectoEmpleadoRepository.buscarActivosPorEmpleado(10L)).thenReturn(List.of(pe));
+            when(etapaProyectoRepository.buscarActivasPorProyecto(anyLong())).thenReturn(List.of());
+            
+            List<ProyectoResponseDto> res = proyectoService.listarProyectosAsignados(10L, 1L);
+            assertThat(res).isNotEmpty();
+        }
+    }
 }

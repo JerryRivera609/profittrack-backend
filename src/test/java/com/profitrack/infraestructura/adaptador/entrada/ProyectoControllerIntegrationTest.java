@@ -110,7 +110,6 @@ class ProyectoControllerIntegrationTest {
         @Order(3)
         @DisplayName("Dueño puede listar proyectos de su empresa")
         void listarProyectos_comoDuenio_retorna200() throws Exception {
-                // Arrange
                 duenioRepo.save(Duenio.builder()
                                 .empresa(empresa)
                                 .nombres("Carlos").apellidos("Rivera")

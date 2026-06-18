@@ -255,4 +255,58 @@ class RegistroHorasServiceTest {
                         assertThat(resumen.getTotalHorasPendientes()).isEqualTo(new BigDecimal("2.5"));
                 }
         }
+
+    // ────────────────────────────────────────────
+    // OBTENER Y ELIMINAR
+    // ────────────────────────────────────────────
+    @Nested
+    @DisplayName("Obtener y eliminar horas")
+    class ObtenerYEliminar {
+        @Test
+        @DisplayName("Debe obtener registro por id")
+        void obtener_exito() {
+            RegistroHoras rh = RegistroHoras.builder().empleado(empleado).proyecto(proyecto).tarea(tarea).estadoAprobacion(EstadoAprobacion.PENDIENTE).build();
+            rh.setId(500L);
+            when(rhRepo.buscarPorId(500L)).thenReturn(Optional.of(rh));
+            
+            RegistroHorasResponseDto res = registroHorasService.obtenerPorId(500L);
+            assertThat(res.getId()).isEqualTo(500L);
+        }
+        
+        @Test
+        @DisplayName("Debe eliminar registro si esta PENDIENTE")
+        void eliminar_exito() {
+            RegistroHoras rh = RegistroHoras.builder().empleado(empleado).proyecto(proyecto).tarea(tarea).estadoAprobacion(EstadoAprobacion.PENDIENTE).build();
+            rh.setId(500L);
+            rh.setActivo(true);
+            when(rhRepo.buscarPorId(500L)).thenReturn(Optional.of(rh));
+            when(rhRepo.guardar(any(RegistroHoras.class))).thenReturn(rh);
+            
+            registroHorasService.eliminar(500L);
+            assertThat(rh.getActivo()).isFalse();
+        }
+        @Test
+        void rechazar_exito() {
+            RegistroHoras rh = RegistroHoras.builder().empleado(empleado).proyecto(proyecto).tarea(tarea).estadoAprobacion(EstadoAprobacion.PENDIENTE).build();
+            rh.setId(500L);
+            when(rhRepo.buscarPorId(500L)).thenReturn(Optional.of(rh));
+            when(rhRepo.guardar(any(RegistroHoras.class))).thenReturn(rh);
+            
+            com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResponseDto res = registroHorasService.rechazar(500L);
+            assertThat(res.getId()).isEqualTo(500L);
+        }
+
+        @Test
+        void listar_exito() {
+            RegistroHoras rh = RegistroHoras.builder().empleado(empleado).proyecto(proyecto).tarea(tarea).estadoAprobacion(EstadoAprobacion.PENDIENTE).build();
+            rh.setId(500L);
+            when(rhRepo.buscarActivosPorProyecto(10L)).thenReturn(List.of(rh));
+            when(rhRepo.buscarActivosPorEmpleado(1L)).thenReturn(List.of(rh));
+            
+            List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResponseDto> res1 = registroHorasService.listarPorProyecto(10L);
+            assertThat(res1).isNotEmpty();
+            List<com.profitrack.aplicacion.dto.registroHorasDto.RegistroHorasResponseDto> res2 = registroHorasService.listarPorEmpleado(1L);
+            assertThat(res2).isNotEmpty();
+        }
+    }
 }

@@ -39,6 +39,10 @@ class TareaProyectoServiceTest {
     private TipoTareaRepository tipoTareaRepo;
     @Mock
     private RegistroHorasRepository registroHorasRepo;
+    @Mock
+    private ProyectoEmpleadoRepository proyectoEmpleadoRepo;
+    @Mock
+    private CostoRegistroHorasRepository costoRegistroHorasRepo;
 
     @InjectMocks
     private TareaProyectoService tareaProyectoService;
@@ -205,6 +209,74 @@ class TareaProyectoServiceTest {
             assertThatThrownBy(() -> tareaProyectoService.eliminar(100L))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("No se puede eliminar una tarea con horas aprobadas");
+        }
+    }
+
+    @Nested
+    @DisplayName("Reactivar Tarea")
+    class ReactivarTarea {
+        @Test
+        @DisplayName("Debe reactivar tarea desactivada")
+        void reactivar_exito() {
+            TareaProyecto t = TareaProyecto.builder()
+                    .proyecto(proyecto).etapaProyecto(etapa).estado(EstadoTarea.PENDIENTE).build();
+            t.setId(100L);
+            t.setActivo(false);
+
+            when(tareaRepo.buscarPorId(100L)).thenReturn(Optional.of(t));
+            when(tareaRepo.guardar(any(TareaProyecto.class))).thenReturn(t);
+
+            TareaProyectoResponseDto res = tareaProyectoService.reactivar(100L);
+            assertThat(t.getActivo()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("Registrar y Actualizar Propia")
+    class RegistrarYActualizarPropia {
+        @Test
+        void registrarRealizada_exito() {
+            proyecto.setActivo(true);
+            empleado.setActivo(true);
+            when(proyectoRepo.buscarPorId(10L)).thenReturn(Optional.of(proyecto));
+            when(empleadoRepo.buscarPorId(1L)).thenReturn(Optional.of(empleado));
+            
+            ProyectoEmpleado pe = new ProyectoEmpleado();
+            when(proyectoEmpleadoRepo.buscarActivoPorProyectoYEmpleado(10L, 1L)).thenReturn(Optional.of(pe));
+            when(etapaRepo.buscarPorId(20L)).thenReturn(Optional.of(etapa));
+            
+            TareaProyecto guardada = TareaProyecto.builder()
+                    .proyecto(proyecto).etapaProyecto(etapa).estado(EstadoTarea.FINALIZADO).build();
+            guardada.setId(100L);
+            when(tareaRepo.guardar(any(TareaProyecto.class))).thenReturn(guardada);
+            
+            RegistroHoras rh = RegistroHoras.builder().horasTrabajadas(new BigDecimal("5.0")).build();
+            rh.setId(50L);
+            when(registroHorasRepo.guardar(any(RegistroHoras.class))).thenReturn(rh);
+            
+            com.profitrack.aplicacion.dto.tareaProyectoDto.TareaRealizadaRequestDto req = new com.profitrack.aplicacion.dto.tareaProyectoDto.TareaRealizadaRequestDto();
+            req.setProyectoId(10L);
+            req.setEtapaProyectoId(20L);
+            req.setHorasDedicadas(new BigDecimal("5.0"));
+            
+            com.profitrack.aplicacion.dto.tareaProyectoDto.TareaRealizadaResponseDto res = tareaProyectoService.registrarRealizada(1L, req);
+            assertThat(res.getTareaId()).isEqualTo(100L);
+        }
+
+        @Test
+        void actualizarPropia_exito() {
+            TareaProyecto t = TareaProyecto.builder()
+                    .proyecto(proyecto).etapaProyecto(etapa).empleadoAsignado(empleado).estado(EstadoTarea.PENDIENTE).build();
+            t.setId(100L);
+            
+            when(tareaRepo.buscarPorId(100L)).thenReturn(Optional.of(t));
+            when(tareaRepo.guardar(any(TareaProyecto.class))).thenReturn(t);
+            when(registroHorasRepo.buscarActivosPorTarea(100L)).thenReturn(List.of());
+            
+            TareaProyectoPatchDto patch = new TareaProyectoPatchDto();
+            patch.setNombre("Mod");
+            TareaProyectoResponseDto res = tareaProyectoService.actualizarPropia(100L, 1L, patch);
+            assertThat(res.getNombre()).isEqualTo("Mod");
         }
     }
 }
