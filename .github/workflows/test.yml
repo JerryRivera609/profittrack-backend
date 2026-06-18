@@ -1,0 +1,37 @@
+name: Pruebas Automatizadas
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Ejecutar Pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: "corretto"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Dar permisos de ejecucion a Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Ejecutar Pruebas Funcionales y de Integracion
+        run: ./mvnw clean test jacoco:report
+
+      - name: Subir Reporte de Jacoco (Artefacto)
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          retention-days: 7

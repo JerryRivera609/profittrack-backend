@@ -52,10 +52,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
-import java.time.LocalDateTime;
 
 @Component
+// @Profile("!test")
 @RequiredArgsConstructor
 @Slf4j
 public class DataSeeder implements CommandLineRunner {
@@ -171,7 +170,7 @@ public class DataSeeder implements CommandLineRunner {
                                                 .build()));
         }
 
-    private void obtenerOCrearDuenio(Empresa empresa) {
+        private void obtenerOCrearDuenio(Empresa empresa) {
                 duenioRepo.findAll().stream()
                                 .filter(d -> "owner@techconsult.pe".equalsIgnoreCase(d.getCorreo()))
                                 .findFirst()
@@ -192,7 +191,8 @@ public class DataSeeder implements CommandLineRunner {
                                                 .build()));
         }
 
-        private Administrador obtenerOCrearAdministrador(String correo, String nombres, String apellidos, String contrasenia) {
+        private Administrador obtenerOCrearAdministrador(String correo, String nombres, String apellidos,
+                        String contrasenia) {
                 return administradorRepo.findAll().stream()
                                 .filter(a -> correo.equalsIgnoreCase(a.getCorreo()))
                                 .findFirst()
