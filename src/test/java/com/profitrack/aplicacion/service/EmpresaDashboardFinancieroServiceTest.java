@@ -45,7 +45,6 @@ class EmpresaDashboardFinancieroServiceTest {
     @Test
     @DisplayName("Debe calcular correctamente rentabilidad, semáforos y márgenes")
     void obtener_calculosCorrectos() {
-        // Arrange
         EmpresaResponseDto empresa = EmpresaResponseDto.builder().id(10L).nombre("Tech").build();
         ProyectoResponseDto p1 = ProyectoResponseDto.builder().id(100L).nombre("P1").build();
 
