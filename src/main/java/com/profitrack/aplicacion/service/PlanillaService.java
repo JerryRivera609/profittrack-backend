@@ -27,9 +27,7 @@ public class PlanillaService implements PlanillaUseCase {
     private final EmpleadoRepository empleadoRepo;
     private final HistorialCostoHoraUseCase historialCostoHoraUseCase;
 
-    private static final BigDecimal DIAS_MES_ESTANDAR = new BigDecimal("31");
-    private static final BigDecimal HORAS_DIA = new BigDecimal("8");
-    private static final BigDecimal HORAS_LABORALES_MES = DIAS_MES_ESTANDAR.multiply(HORAS_DIA); // 240 horas
+    private static final BigDecimal HORAS_LABORALES_MES = new BigDecimal("160");
 
     @Override
     @Transactional
