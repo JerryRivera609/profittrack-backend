@@ -30,4 +30,13 @@ public class EmpresaRepositoryAdapter implements EmpresaRepository {
         return jpaRepository.findAllByActivoTrue();
     }
 
+    @Override
+    public List<Empresa> buscarTodos() {
+        return jpaRepository.findAll();
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        jpaRepository.deleteById(id);
+    }
 }

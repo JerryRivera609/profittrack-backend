@@ -51,6 +51,13 @@ public class SecurityContextUtils {
                         String.join(" o ", rolesPermitidos));
     }
 
+    public void validarSaasAdmin() {
+        if ("administrador".equalsIgnoreCase(getTipo())) {
+            return;
+        }
+        throw new RuntimeException("Acceso denegado: se requieren privilegios de Administrador SaaS");
+    }
+
     public boolean tieneRol(String... rolesPermitidos) {
         if ("duenio".equalsIgnoreCase(getTipo())) {
             return true;

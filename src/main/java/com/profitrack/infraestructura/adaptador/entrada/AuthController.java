@@ -59,6 +59,9 @@ public class AuthController {
         Optional<Empleado> empleadoOpt = empleadoRepo.buscarPorCorreoYActivo(req.correo());
         if (empleadoOpt.isPresent()) {
             Empleado emp = empleadoOpt.get();
+            if (emp.getEmpresa() != null && !emp.getEmpresa().getActivo()) {
+                return ResponseEntity.status(403).body(Map.of("error", "La empresa de este usuario se encuentra inactiva. Contacte al administrador."));
+            }
             tokenService.crearSesionEmpleado(emp, httpReq.getHeader("User-Agent"), httpRes);
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Login exitoso",
@@ -68,10 +71,13 @@ public class AuthController {
                     "rol", emp.getRol() != null ? emp.getRol().getNombre() : "SIN_ROL",
                     "empresaId", emp.getEmpresa().getId()));
         }
-
+ 
         Optional<Duenio> duenioOpt = duenioRepo.buscarPorCorreoYActivo(req.correo());
         if (duenioOpt.isPresent()) {
             Duenio duenio = duenioOpt.get();
+            if (duenio.getEmpresa() != null && !duenio.getEmpresa().getActivo()) {
+                return ResponseEntity.status(403).body(Map.of("error", "La empresa de este usuario se encuentra inactiva. Contacte al administrador."));
+            }
             tokenService.crearSesionDuenio(duenio, httpReq.getHeader("User-Agent"), httpRes);
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Login exitoso",
