@@ -39,4 +39,9 @@ public class DuenioRepositoryAdapter implements DuenioRepository {
     public Optional<Duenio> buscarPorCorreoYActivo(String correo) {
         return jpaRepository.findByCorreoAndActivoTrue(correo);
     }
+
+    @Override
+    public List<Duenio> buscarTodos() {
+        return jpaRepository.findAll();
+    }
 }

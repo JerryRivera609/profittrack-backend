@@ -44,4 +44,9 @@ public class EmpleadoRepositoryAdapter implements EmpleadoRepository {
     public Optional<Empleado> buscarPorCorreoYActivo(String correo) {
         return jpaRepository.findByCorreoAndActivoTrue(correo);
     }
+
+    @Override
+    public List<Empleado> buscarTodos() {
+        return jpaRepository.findAll();
+    }
 }

@@ -34,4 +34,9 @@ public class ProyectoRepositoryAdapter implements ProyectoRepository {
     public List<Proyecto> buscarInactivosPorEmpresa(Long empresaId) {
         return jpaRepository.findAllByEmpresaIdAndActivoFalse(empresaId);
     }
+
+    @Override
+    public List<Proyecto> buscarTodos() {
+        return jpaRepository.findAll();
+    }
 }
