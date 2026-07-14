@@ -20,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +49,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Transactional
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest req,
             HttpServletRequest httpReq,
             HttpServletResponse httpRes) {
@@ -105,6 +107,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Transactional
     public ResponseEntity<Map<String, String>> refresh(HttpServletRequest req,
             HttpServletResponse res) {
         String rawRefresh = extractCookie(req, "refresh_token");
