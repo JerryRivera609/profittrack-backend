@@ -17,6 +17,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "egresos")
+@jakarta.persistence.EntityListeners(com.profitrack.infraestructura.adaptador.entrada.ProjectDashboardEntityListener.class)
 @Getter
 @Setter
 @Builder

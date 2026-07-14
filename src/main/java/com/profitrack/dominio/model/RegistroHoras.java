@@ -19,6 +19,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "registro_horas")
+@jakarta.persistence.EntityListeners(com.profitrack.infraestructura.adaptador.entrada.ProjectDashboardEntityListener.class)
 @Getter
 @Setter
 @Builder
